@@ -84,6 +84,34 @@ pub enum Rank{
     Two
 }
 
+pub fn get_suit_array(suit_order: &[Suit]) -> [SuitContext; 4] {
+    [
+        SuitContext::new(Suit::Clubs, suit_order),
+        SuitContext::new(Suit::Hearts, suit_order),
+        SuitContext::new(Suit::Diamonds, suit_order),
+        SuitContext::new(Suit::Spades, suit_order),
+    ]
+}
+
+pub fn get_rank_array() -> [Rank; 13] {
+    [
+        Rank::Ace,
+        Rank::Two,
+        Rank::Three,
+        Rank::Four, 
+        Rank::Five,
+        Rank::Six,
+        Rank::Seven,
+        Rank::Eight,
+        Rank::Nine,
+        Rank::Ten,
+        Rank::Jack,
+        Rank::Queen,
+        Rank::King,
+    ]
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;

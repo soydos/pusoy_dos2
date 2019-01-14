@@ -24,20 +24,6 @@ impl <'a> Card<'a> {
 
 impl <'a> PartialOrd for Card<'a> {
     fn partial_cmp(&self, other: &Card) -> Option<Ordering> {
-
-/*
-        if self.reversed {
-            match other.rank.partial_cmp(&self.rank) {
-                Some(Ordering::Equal) => other.suit.partial_cmp(&self.suit),
-                x                     => x
-            }
-        } else {
-            match self.rank.partial_cmp(&other.rank) {
-                Some(Ordering::Equal) => self.suit.partial_cmp(&other.suit),
-                x                     => x
-            }
-}
-*/
         if self.reversed != other.reversed {
             panic!("Cannot compare cards with different reversal status");
         }
@@ -54,12 +40,13 @@ impl <'a> PartialOrd for Card<'a> {
     }
 }
 
-/*
-pub enum HandCard {
-    Card(Card),
+#[derive(Clone)]
+pub enum HandCard<'a> {
+    Card(Card<'a>),
     Joker(u32),    
 }
 
+/*
 pub struct PlayedCard {
     card: Card
     joker: bool
@@ -130,6 +117,18 @@ mod tests {
         let three_of_hearts = Card::new(Rank::Three, &hearts, reversed);
 
         assert!(three_of_hearts < three_of_clubs);
+    }
+
+    #[test]
+    fn rank_takes_precedence() {
+        let reversed = false;
+        let suit_order = [Suit::Clubs, Suit::Hearts];
+        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
+        let hearts = SuitContext::new(Suit::Hearts, &suit_order);
+        let four_of_clubs = Card::new(Rank::Four, &clubs, reversed);
+        let three_of_hearts = Card::new(Rank::Three, &hearts, reversed);
+
+        assert!(three_of_hearts < four_of_clubs);
     }
 
 }
