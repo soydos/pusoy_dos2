@@ -40,7 +40,7 @@ impl <'a> PartialOrd for Card<'a> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum HandCard<'a> {
     Card(Card<'a>),
     Joker(u32),    

@@ -161,4 +161,25 @@ mod tests {
 
         assert!(hearts < clubs);
     }
+
+    #[test]
+    fn it_exposes_a_convenience_function_for_grabbing_suits() {
+
+        let order = [
+            Suit::Hearts,
+            Suit::Clubs,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
+        let suits = get_suit_array(&order);
+        let clubs = SuitContext::new(Suit::Clubs, &order);
+        let hearts = SuitContext::new(Suit::Hearts, &order);
+        let diamonds = SuitContext::new(Suit::Diamonds, &order);
+        let spades = SuitContext::new(Suit::Spades, &order);
+
+        assert_eq!(suits[0], clubs);
+        assert_eq!(suits[1], hearts);
+        assert_eq!(suits[2], diamonds);
+        assert_eq!(suits[3], spades);
+    }
 }
