@@ -64,6 +64,7 @@ impl <'a> PartialOrd for SuitContext<'a> {
 
 #[derive(
     Clone,
+    Copy,
     Debug,
     PartialEq,
     PartialOrd,

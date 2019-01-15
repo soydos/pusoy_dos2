@@ -45,7 +45,7 @@ impl <'a> Deck<'a> {
         self.0.shuffle(&mut rng);
     }
 
-    pub fn deal(&self, players: usize) -> Vec<Vec<HandCard<'a>>> {
+    pub fn deal(&self, players: u8) -> Vec<Vec<HandCard<'a>>> {
         let mut index = 0;
         let mut deck_stack = self.0.clone();
         let mut dealt_stacks = self.get_nested_vec(players); 
@@ -67,17 +67,17 @@ impl <'a> Deck<'a> {
         self.0.clone()
     }
 
-    fn get_nested_vec<T>(&self, players: usize) -> Vec<Vec<T>> {
+    fn get_nested_vec<T>(&self, players: u8) -> Vec<Vec<T>> {
         let mut dealt_stacks = vec!();
-        while dealt_stacks.len() < players {
+        while dealt_stacks.len() < players as usize {
             dealt_stacks.push(vec!());
         }
 
         dealt_stacks
     }
 
-    fn rotate_index_to_max(&self, index: usize, max: usize) -> usize {
-        if index + 1 < max {
+    fn rotate_index_to_max(&self, index: usize, max: u8) -> usize {
+        if index + 1 < max as usize {
            index + 1
         } else {
             0

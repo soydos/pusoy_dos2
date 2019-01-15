@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 
 #[derive(
     Clone,
+    Copy,
     Debug,
     PartialEq,
 )]
@@ -40,7 +41,7 @@ impl <'a> PartialOrd for Card<'a> {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum HandCard<'a> {
     Card(Card<'a>),
     Joker(u32),    
