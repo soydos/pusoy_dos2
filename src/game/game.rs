@@ -1,4 +1,4 @@
-use crate::cards::{SuitContext, Deck};
+use crate::cards::{SuitContext, Deck, HandCard};
 use super::Player;
 
 pub struct Game<'a> {
@@ -38,6 +38,10 @@ impl <'a> Game<'a> {
             .map(|p| String::from(p.get_id()))
             .collect()
     }
+
+    fn play_move(&self, player_id: &str, player_move: Vec<HandCard>) -> Result<(), ()> {
+        Err(())
+    }
 }
 
 #[cfg(test)]
@@ -57,6 +61,35 @@ mod tests {
         let suits = get_suit_array(&suit_order);
         let (game, ids) = Game::new(1, 0, 3, &suits, false);
         assert_eq!(ids.len(), 3);
+    }
+
+    #[test]
+    fn invalid_player_cannot_make_a_move() {
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades,
+        ];
+
+        let suits = get_suit_array(&suit_order);
+        let (game, _) = Game::new(1, 0, 3, &suits, false);
+
+        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
+        let three_of_clubs = Card::new(Rank::Three, &clubs, false);
+        let three_of_clubs_hand_card = HandCard::Card(three_of_clubs);
+        let player_move = vec!(
+            three_of_clubs_hand_card
+        );
+
+        let result = game.play_move("INVALID_PLAYER_ID", player_move); 
+
+        let expected_result = match result {
+            Err(_) => true,
+            _ => false
+        };
+
+        assert!(expected_result);
     }
 
 }
