@@ -19,7 +19,7 @@ impl <'a> Game<'a> {
 
         let cards = deck.deal(num_players);
         let players = cards.iter()
-            .map(|c| Player::new(c.clone()))
+            .map(|c| Player::new(nanoid::simple(), c.clone()))
             .collect();
         let game = Game {
             players,
@@ -41,6 +41,10 @@ impl <'a> Game<'a> {
 
     fn play_move(&self, player_id: &str, player_move: Vec<PlayedCard>) -> Result<(), ()> {
         Err(())
+    }
+
+    fn get_player(&self, id: String) -> Player {
+        unimplemented!()
     }
 }
 

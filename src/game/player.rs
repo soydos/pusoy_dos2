@@ -8,10 +8,10 @@ pub struct Player<'a> {
 }
 
 impl <'a> Player<'a> {
-    pub fn new(hand: Vec<HandCard<'a>>) -> Player<'a> {
+    pub fn new(id: String, hand: Vec<HandCard<'a>>) -> Player<'a> {
         Player {
-            id: nanoid::simple(),
-            hand,
+            id,
+            hand
         }
     }
 
@@ -31,13 +31,15 @@ mod tests {
 
     #[test]
     fn it_has_an_id() {
-        let player = Player::new(vec!());
-        assert_eq!(player.get_id().len(), 21);
+        let id = "id1";;
+        let player = Player::new(String::from("id1"), vec!());
+        assert_eq!(player.get_id(), id);
     }
 
     #[test]
     fn it_shows_number_of_cards_left() {
-         let suit_order = [
+        let id = String::from("id1");
+        let suit_order = [
             Suit::Clubs,
             Suit::Hearts,
             Suit::Diamonds,
@@ -47,7 +49,7 @@ mod tests {
         let deck = Deck::new(1, 0, &suits);
 
         let dealt = deck.deal(4);
-        let player = Player::new(dealt[0].to_owned()); 
+        let player = Player::new(id, dealt[0].to_owned()); 
         assert_eq!(player.get_card_count(), 13);
     }
 }
