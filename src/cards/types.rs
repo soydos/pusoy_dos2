@@ -68,6 +68,8 @@ impl <'a> PartialOrd for SuitContext<'a> {
     Debug,
     PartialEq,
     PartialOrd,
+    Hash,
+    Eq,
 )]
 pub enum Rank{
     Three,

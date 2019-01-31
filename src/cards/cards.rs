@@ -21,6 +21,10 @@ impl <'a> Card<'a> {
     ) -> Card<'a> {
         Card { rank, suit, reversed }
     }
+
+    pub fn get_rank(&self) -> Rank {
+        self.rank
+    }
 }
 
 impl <'a> PartialOrd for Card<'a> {
@@ -47,12 +51,23 @@ pub enum HandCard<'a> {
     Joker(u32),    
 }
 
-/*
-pub struct PlayedCard {
-    card: Card
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlayedCard<'a> {
+    card: Card<'a>,
     joker: bool
 }
-*/
+
+impl <'a> PlayedCard<'a> {
+    pub fn new(card: Card<'a>, joker: bool) -> PlayedCard<'a> {
+        PlayedCard{ card, joker }
+    }
+
+    pub fn get_rank(&self) -> Rank {
+        self.card.get_rank()
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

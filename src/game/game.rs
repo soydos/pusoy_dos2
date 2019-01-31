@@ -1,4 +1,4 @@
-use crate::cards::{SuitContext, Deck, HandCard};
+use crate::cards::{SuitContext, Deck, PlayedCard};
 use super::Player;
 
 pub struct Game<'a> {
@@ -39,7 +39,7 @@ impl <'a> Game<'a> {
             .collect()
     }
 
-    fn play_move(&self, player_id: &str, player_move: Vec<HandCard>) -> Result<(), ()> {
+    fn play_move(&self, player_id: &str, player_move: Vec<PlayedCard>) -> Result<(), ()> {
         Err(())
     }
 }
@@ -77,7 +77,7 @@ mod tests {
 
         let clubs = SuitContext::new(Suit::Clubs, &suit_order);
         let three_of_clubs = Card::new(Rank::Three, &clubs, false);
-        let three_of_clubs_hand_card = HandCard::Card(three_of_clubs);
+        let three_of_clubs_hand_card = PlayedCard::new(three_of_clubs, false);
         let player_move = vec!(
             three_of_clubs_hand_card
         );
