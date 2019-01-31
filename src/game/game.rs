@@ -10,41 +10,31 @@ impl <'a> Game<'a> {
     pub fn new(
         num_decks: u8,
         num_jokers: u8,
-        num_players: u8,
+        player_ids: &'a [String],
         suits: &'a [SuitContext],
         reversals_enabled: bool,
-    ) -> (Game<'a>, Vec<String>) {
+    ) -> Game<'a> {
         let mut deck = Deck::new(num_decks, num_jokers, suits);
         deck.shuffle();
 
-        let cards = deck.deal(num_players);
-        let players = cards.iter()
-            .map(|c| Player::new(nanoid::simple(), c.clone()))
+        let cards = deck.deal(player_ids.len() as u8);
+        let players = cards.iter().zip(player_ids)
+            .map(|(c, id)| Player::new(id.to_string(), c.clone()))
             .collect();
-        let game = Game {
+
+        Game {
             players,
             reversals_enabled,
-        };
-        let player_ids = game.get_player_ids();
+        }
 
-        (
-            game,
-            player_ids,
-        )
-    }
-
-    fn get_player_ids(&self) -> Vec<String> {
-        self.players.iter()
-            .map(|p| String::from(p.get_id()))
-            .collect()
     }
 
     fn play_move(&self, player_id: &str, player_move: Vec<PlayedCard>) -> Result<(), ()> {
         Err(())
     }
 
-    fn get_player(&self, id: String) -> Player {
-        unimplemented!()
+    fn get_player(&self, id: &str) -> Option<&Player> {
+        self.players.iter().find(|&p| p.get_id() == id)
     }
 }
 
@@ -52,20 +42,6 @@ impl <'a> Game<'a> {
 mod tests {
     use super::*;
     use crate::cards::*;
-
-    #[test]
-    fn it_returns_player_ids_on_creation() {
-        let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-
-        let suits = get_suit_array(&suit_order);
-        let (game, ids) = Game::new(1, 0, 3, &suits, false);
-        assert_eq!(ids.len(), 3);
-    }
 
     #[test]
     fn invalid_player_cannot_make_a_move() {
@@ -76,8 +52,10 @@ mod tests {
             Suit::Spades,
         ];
 
+        let ids = [String::from("a"), String::from("b"), String::from("c")];
+
         let suits = get_suit_array(&suit_order);
-        let (game, _) = Game::new(1, 0, 3, &suits, false);
+        let game = Game::new(1, 0, &ids, &suits, false);
 
         let clubs = SuitContext::new(Suit::Clubs, &suit_order);
         let three_of_clubs = Card::new(Rank::Three, &clubs, false);
@@ -94,6 +72,24 @@ mod tests {
         };
 
         assert!(expected_result);
+    }
+
+    #[test]
+    fn it_allows_retrieving_a_player_by_id() {
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades,
+        ];
+
+        let ids = [String::from("a"), String::from("b"), String::from("c")];
+        let suits = get_suit_array(&suit_order);
+        let game = Game::new(1, 0, &ids, &suits, false);
+
+        let player_a = game.get_player("a").unwrap();
+
+        assert_eq!(player_a.get_card_count(), 18);
     }
 
 }
