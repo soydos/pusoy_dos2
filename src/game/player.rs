@@ -1,13 +1,13 @@
 use crate::cards::HandCard;
 
 
-pub struct Player<'a> {
+pub struct Player {
     id: String,
-    hand: Vec<HandCard<'a>>,
+    hand: Vec<HandCard>,
 }
 
-impl <'a> Player<'a> {
-    pub fn new(id: String, hand: Vec<HandCard<'a>>) -> Player<'a> {
+impl Player {
+    pub fn new(id: String, hand: Vec<HandCard>) -> Player {
         Player {
             id,
             hand
@@ -18,7 +18,7 @@ impl <'a> Player<'a> {
         &self.id
     }
 
-    pub fn get_hand(&self) -> Vec<HandCard<'a>> {
+    pub fn get_hand(&self) -> Vec<HandCard> {
         self.hand.clone()
     }
 
@@ -39,7 +39,7 @@ mod tests {
         assert_eq!(player.get_id(), id);
     }
 
-    #[test]
+
     fn it_shows_number_of_cards_left() {
         let id = String::from("id1");
         let suit_order = [
@@ -48,15 +48,14 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let deck = Deck::new(1, 0, &suits);
+        let suits = get_suit_array(suit_order);
+        let deck = Deck::new(1, 0, suits);
 
         let dealt = deck.deal(4);
         let player = Player::new(id, dealt[0].to_owned()); 
         assert_eq!(player.get_card_count(), 13);
     }
 
-    #[test]
     fn it_can_return_the_hand() {
         let id = String::from("id1");
         let suit_order = [
@@ -65,13 +64,14 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let deck = Deck::new(1, 0, &suits);
+        let suits = get_suit_array(suit_order);
+        let deck = Deck::new(1, 0, suits);
 
         let dealt = deck.deal(4);
         let player = Player::new(id, dealt[0].to_owned()); 
         assert_eq!(player.get_hand().len(), 13);
 
     }
+
 }
 

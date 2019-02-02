@@ -1,28 +1,41 @@
-use crate::cards::{SuitContext, Deck, PlayedCard};
+use crate::cards::{Suit, SuitContext, Deck, PlayedCard, get_suit_array};
 use super::Player;
 
-pub struct Game<'a> {
-    players: Vec<Player<'a>>,
+pub struct Game {
+    num_decks: u8,
+    num_jokers: u8,
+    players: Vec<Player>,
     reversals_enabled: bool,
+    suits: [Suit; 4],
 }
 
-impl <'a> Game<'a> {
+impl Game {
     pub fn new(
         num_decks: u8,
         num_jokers: u8,
-        player_ids: &'a [String],
-        suits: &'a [SuitContext],
+        player_ids: &[String],
+        suits: [Suit; 4],
         reversals_enabled: bool,
-    ) -> Game<'a> {
-        let mut deck = Deck::new(num_decks, num_jokers, suits);
-        deck.shuffle();
+    ) -> Game {
 
+        let suit_context = get_suit_array(suits);
+        let mut deck = Deck::new(
+            num_decks,
+            num_jokers,
+            suit_context
+        );
+        deck.shuffle();
         let cards = deck.deal(player_ids.len() as u8);
+
         let players = cards.iter().zip(player_ids)
             .map(|(c, id)| Player::new(id.to_string(), c.clone()))
             .collect();
 
+
         Game {
+            num_decks,
+            num_jokers,
+            suits,
             players,
             reversals_enabled,
         }
@@ -54,11 +67,10 @@ mod tests {
 
         let ids = [String::from("a"), String::from("b"), String::from("c")];
 
-        let suits = get_suit_array(&suit_order);
-        let game = Game::new(1, 0, &ids, &suits, false);
+        let game = Game::new(1, 0, &ids, suit_order, false);
 
-        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
-        let three_of_clubs = Card::new(Rank::Three, &clubs, false);
+        let clubs = SuitContext::new(Suit::Clubs, suit_order);
+        let three_of_clubs = Card::new(Rank::Three, clubs, false);
         let three_of_clubs_hand_card = PlayedCard::new(three_of_clubs, false);
         let player_move = vec!(
             three_of_clubs_hand_card
@@ -84,8 +96,7 @@ mod tests {
         ];
 
         let ids = [String::from("a"), String::from("b"), String::from("c")];
-        let suits = get_suit_array(&suit_order);
-        let game = Game::new(1, 0, &ids, &suits, false);
+        let game = Game::new(1, 0, &ids, suit_order, false);
 
         let player_a = game.get_player("a").unwrap();
 

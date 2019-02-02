@@ -3,21 +3,21 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 /// Type of hand that can be played
-pub enum Hand<'a>{
+pub enum Hand{
     /// No cards
     Pass,
     /// One card
-    Single(PlayedCard<'a>),
+    Single(PlayedCard),
     /// A pair of matching cards
-    Pair(PlayedCard<'a>, PlayedCard<'a>),
+    Pair(PlayedCard, PlayedCard),
     /// 3 of a kind
-    Prial(PlayedCard<'a>, PlayedCard<'a>, PlayedCard<'a>),
+    Prial(PlayedCard, PlayedCard, PlayedCard),
     /// 5 card trick
-    FiveCardTrick(Trick<'a>)
+    FiveCardTrick(Trick)
 }
 
-impl <'a> Hand<'a> {
-    pub fn build(cards: Vec<PlayedCard<'a>>) -> Option<Hand<'a>> {
+impl Hand {
+    pub fn build(cards: Vec<PlayedCard>) -> Option<Hand> {
 
         match cards.len() {
                 0 => Some(Hand::Pass),
@@ -29,7 +29,7 @@ impl <'a> Hand<'a> {
         }
     }
 
-    fn check_valid_pair(cards: Vec<PlayedCard<'a>>) -> Option<Hand<'a>> {
+    fn check_valid_pair(cards: Vec<PlayedCard>) -> Option<Hand> {
         if Self::get_counts(cards.clone()).len() == 1 {
             Some(Hand::Pair(cards[0], cards[1]))
         } else {
@@ -37,7 +37,7 @@ impl <'a> Hand<'a> {
         }
     }
 
-    fn check_valid_prial(cards: Vec<PlayedCard<'a>>) -> Option<Hand<'a>> {
+    fn check_valid_prial(cards: Vec<PlayedCard>) -> Option<Hand> {
         if Self::get_counts(cards.clone()).len() == 1 {
             Some(Hand::Prial(cards[0], cards[1], cards[2]))
         } else {
@@ -45,7 +45,7 @@ impl <'a> Hand<'a> {
         }
     }
 
-    fn get_counts(cards: Vec<PlayedCard<'a>>) -> HashMap<Rank, usize> {
+    fn get_counts(cards: Vec<PlayedCard>) -> HashMap<Rank, usize> {
         cards.iter().fold(HashMap::new(), |mut acc, &card| {
             *acc.entry(card.get_rank()).or_insert(0) += 1;
             acc
@@ -72,9 +72,9 @@ pub enum TrickType{
 }
 
 #[derive(Clone, Debug, PartialEq, Copy)]
-pub struct Trick<'a> {
+pub struct Trick {
     pub trick_type: TrickType,
-    pub cards: [PlayedCard<'a>;5]
+    pub cards: [PlayedCard; 5]
 }
 
 #[cfg(test)]
@@ -91,10 +91,15 @@ mod tests {
 
     #[test]
     fn a_single_card_is_a_single() {
-        let suit_order = [Suit::Clubs, Suit::Hearts];
-        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
+        let clubs = SuitContext::new(Suit::Clubs, suit_order);
 
-        let three_of_clubs = Card::new(Rank::Three, &clubs, false);
+        let three_of_clubs = Card::new(Rank::Three, clubs, false);
         let card = PlayedCard::new(three_of_clubs, false);
 
         let cards = vec!(card);
@@ -105,13 +110,19 @@ mod tests {
 
     #[test]
     fn a_pair_of_same_rank_cards_is_a_pair() {
-        let suit_order = [Suit::Clubs, Suit::Hearts];
-        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
-        let hearts = SuitContext::new(Suit::Hearts, &suit_order);
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
 
-        let three_of_clubs = Card::new(Rank::Three, &clubs, false);
+        let clubs = SuitContext::new(Suit::Clubs, suit_order);
+        let hearts = SuitContext::new(Suit::Hearts, suit_order);
+
+        let three_of_clubs = Card::new(Rank::Three, clubs, false);
         let played_three_of_clubs = PlayedCard::new(three_of_clubs, false);
-        let three_of_hearts = Card::new(Rank::Three, &hearts, false);
+        let three_of_hearts = Card::new(Rank::Three, hearts, false);
         let played_three_of_hearts = PlayedCard::new(three_of_hearts, false);
 
 
@@ -126,13 +137,18 @@ mod tests {
 
     #[test]
     fn a_pair_of_different_rank_cards_is_invalid() {
-        let suit_order = [Suit::Clubs, Suit::Hearts];
-        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
-        let hearts = SuitContext::new(Suit::Hearts, &suit_order);
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
+        let clubs = SuitContext::new(Suit::Clubs, suit_order);
+        let hearts = SuitContext::new(Suit::Hearts, suit_order);
 
-        let three_of_clubs = Card::new(Rank::Three, &clubs, false);
+        let three_of_clubs = Card::new(Rank::Three, clubs, false);
         let played_three_of_clubs = PlayedCard::new(three_of_clubs, false);
-        let four_of_hearts = Card::new(Rank::Four, &hearts, false);
+        let four_of_hearts = Card::new(Rank::Four, hearts, false);
         let played_four_of_hearts = PlayedCard::new(four_of_hearts, false);
 
 
@@ -147,16 +163,21 @@ mod tests {
 
     #[test]
     fn three_cards_of_same_rank_is_a_prial() {
-        let suit_order = [Suit::Clubs, Suit::Hearts, Suit::Diamonds];
-        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
-        let hearts = SuitContext::new(Suit::Hearts, &suit_order);
-        let diamonds = SuitContext::new(Suit::Diamonds, &suit_order);
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
+        let clubs = SuitContext::new(Suit::Clubs, suit_order);
+        let hearts = SuitContext::new(Suit::Hearts, suit_order);
+        let diamonds = SuitContext::new(Suit::Diamonds, suit_order);
 
-        let three_of_clubs = Card::new(Rank::Three, &clubs, false);
+        let three_of_clubs = Card::new(Rank::Three, clubs, false);
         let played_three_of_clubs = PlayedCard::new(three_of_clubs, false);
-        let three_of_hearts = Card::new(Rank::Three, &hearts, false);
+        let three_of_hearts = Card::new(Rank::Three, hearts, false);
         let played_three_of_hearts = PlayedCard::new(three_of_hearts, false);
-        let three_of_diamonds = Card::new(Rank::Three, &diamonds, false);
+        let three_of_diamonds = Card::new(Rank::Three, diamonds, false);
         let played_three_of_diamonds = PlayedCard::new(three_of_diamonds, false);
 
         let cards = vec!(
@@ -179,16 +200,21 @@ mod tests {
 
     #[test]
     fn three_cards_of_different_rank_is_a_invalid() {
-        let suit_order = [Suit::Clubs, Suit::Hearts, Suit::Diamonds];
-        let clubs = SuitContext::new(Suit::Clubs, &suit_order);
-        let hearts = SuitContext::new(Suit::Hearts, &suit_order);
-        let diamonds = SuitContext::new(Suit::Diamonds, &suit_order);
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
+        let clubs = SuitContext::new(Suit::Clubs, suit_order);
+        let hearts = SuitContext::new(Suit::Hearts, suit_order);
+        let diamonds = SuitContext::new(Suit::Diamonds, suit_order);
 
-        let three_of_clubs = Card::new(Rank::Three, &clubs, false);
+        let three_of_clubs = Card::new(Rank::Three, clubs, false);
         let played_three_of_clubs = PlayedCard::new(three_of_clubs, false);
-        let four_of_hearts = Card::new(Rank::Four, &hearts, false);
+        let four_of_hearts = Card::new(Rank::Four, hearts, false);
         let played_four_of_hearts = PlayedCard::new(four_of_hearts, false);
-        let three_of_diamonds = Card::new(Rank::Three, &diamonds, false);
+        let three_of_diamonds = Card::new(Rank::Three, diamonds, false);
         let played_three_of_diamonds = PlayedCard::new(three_of_diamonds, false);
 
         let cards = vec!(

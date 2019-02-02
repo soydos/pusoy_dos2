@@ -8,14 +8,14 @@ use super::{
 };
 
 #[derive(Clone)]
-pub struct Deck<'a>(Vec<HandCard<'a>>);
+pub struct Deck(Vec<HandCard>);
 
-impl <'a> Deck<'a> {
+impl Deck {
     pub fn new(
         number_of_decks: u8,
         number_of_jokers: u8,
-        suits: &'a[SuitContext],
-    ) -> Deck<'a> {
+        suits: [SuitContext; 4],
+    ) -> Deck {
         let ranks = get_rank_array();
         let mut cards = vec!();
 
@@ -28,9 +28,13 @@ impl <'a> Deck<'a> {
         let mut deck_count = 0;
 
         while deck_count < number_of_decks {
-            for suit in suits {
+            for suit in &suits {
                 for rank in &ranks {
-                    let card = Card::new(rank.clone(), suit, false);
+                    let card = Card::new(
+                        rank.clone(),
+                        suit.clone(),
+                        false
+                    );
                     cards.push(HandCard::Card(card));
                 }
             }
@@ -45,7 +49,7 @@ impl <'a> Deck<'a> {
         self.0.shuffle(&mut rng);
     }
 
-    pub fn deal(&self, players: u8) -> Vec<Vec<HandCard<'a>>> {
+    pub fn deal(&self, players: u8) -> Vec<Vec<HandCard>> {
         let mut index = 0;
         let mut deck_stack = self.0.clone();
         let mut dealt_stacks = self.get_nested_vec(players); 
@@ -63,7 +67,7 @@ impl <'a> Deck<'a> {
         self.0.len()
     }
 
-    pub fn to_vec(&self) -> Vec<HandCard<'a>> {
+    pub fn to_vec(&self) -> Vec<HandCard> {
         self.0.clone()
     }
 
@@ -97,8 +101,8 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let deck = Deck::new(1, 0, &suits);
+        let suits = get_suit_array(suit_order);
+        let deck = Deck::new(1, 0, suits);
         assert_eq!(deck.count(), 52);
     }
 
@@ -110,8 +114,8 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let deck = Deck::new(1, 1, &suits);
+        let suits = get_suit_array(suit_order);
+        let deck = Deck::new(1, 1, suits);
         assert_eq!(deck.count(), 53);
 
     }
@@ -124,8 +128,8 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let deck = Deck::new(2, 0, &suits);
+        let suits = get_suit_array(suit_order);
+        let deck = Deck::new(2, 0, suits);
         assert_eq!(deck.count(), 104);
 
     }
@@ -138,8 +142,8 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let deck = Deck::new(2, 1, &suits);
+        let suits = get_suit_array(suit_order);
+        let deck = Deck::new(2, 1, suits);
         assert_eq!(deck.count(), 105);
 
     }
@@ -152,8 +156,8 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let mut deck = Deck::new(1, 0, &suits);
+        let suits = get_suit_array(suit_order);
+        let mut deck = Deck::new(1, 0, suits);
 
         let original_order = deck.to_vec();
 
@@ -175,8 +179,8 @@ mod tests {
             Suit::Diamonds,
             Suit::Spades,
         ];
-        let suits = get_suit_array(&suit_order);
-        let deck = Deck::new(1, 0, &suits);
+        let suits = get_suit_array(suit_order);
+        let deck = Deck::new(1, 0, suits);
 
         let dealt = deck.deal(4);
         assert_eq!(dealt.len(), 4);
