@@ -1,6 +1,8 @@
+use wasm_bindgen::prelude::*;
 use crate::cards::{Suit, SuitContext, Deck, PlayedCard, get_suit_array};
 use super::Player;
 
+#[wasm_bindgen]
 pub struct Game {
     num_decks: u8,
     num_jokers: u8,
