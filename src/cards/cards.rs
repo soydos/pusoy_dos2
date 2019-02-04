@@ -1,11 +1,15 @@
 use super::{SuitContext, Rank};
 use std::cmp::Ordering;
+use wasm_bindgen::prelude::*;
 
+
+#[wasm_bindgen]
 #[derive(
     Clone,
     Copy,
     Debug,
     PartialEq,
+    Serialize,
 )]
 pub struct Card {
     rank: Rank,
@@ -45,7 +49,13 @@ impl PartialOrd for Card {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(
+    Clone,
+    Copy,
+    PartialEq,
+    Debug,
+    Serialize,
+)]
 pub enum HandCard {
     Card(Card),
     Joker(u32),    

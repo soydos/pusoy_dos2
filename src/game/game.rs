@@ -20,6 +20,7 @@ impl Game {
         reversals_enabled: bool,
     ) -> Game {
 
+
         let suit_context = get_suit_array(suits);
         let mut deck = Deck::new(
             num_decks,
@@ -48,8 +49,12 @@ impl Game {
         Err(())
     }
 
-    fn get_player(&self, id: &str) -> Option<&Player> {
-        self.players.iter().find(|&p| p.get_id() == id)
+    pub fn get_player(&self, id: &str) -> Option<Player> {
+        match self.players.iter()
+            .find(|&p| p.get_id() == id) {
+            Some(p) => Some(p.clone()),
+            _        => None
+        }
     }
 }
 

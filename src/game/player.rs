@@ -1,6 +1,11 @@
 use crate::cards::HandCard;
+use wasm_bindgen::prelude::*;
 
-
+#[wasm_bindgen]
+#[derive(
+    Clone,
+    Debug,
+)]
 pub struct Player {
     id: String,
     hand: Vec<HandCard>,

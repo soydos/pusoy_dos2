@@ -1,19 +1,23 @@
 use std::cmp::Ordering;
+use wasm_bindgen::prelude::*;
 
 #[derive(
     Clone,
     Debug,
     PartialEq,
+    Serialize,
 )]
 pub enum Colour {
     Red, Black
 }
 
+#[wasm_bindgen]
 #[derive(
     Clone,
     Copy,
     Debug,
     PartialEq,
+    Serialize,
 )]
 pub enum Suit{
     Clubs,
@@ -31,11 +35,13 @@ impl Suit {
     }
 }
 
+#[wasm_bindgen]
 #[derive(
     Clone,
     Copy,
     Debug,
     PartialEq,
+    Serialize,
 )]
 pub struct SuitContext {
     suit: Suit,
@@ -64,6 +70,7 @@ impl PartialOrd for SuitContext {
     }
 }
 
+#[wasm_bindgen]
 #[derive(
     Clone,
     Copy,
@@ -72,6 +79,7 @@ impl PartialOrd for SuitContext {
     PartialOrd,
     Hash,
     Eq,
+    Serialize,
 )]
 pub enum Rank{
     Three,
