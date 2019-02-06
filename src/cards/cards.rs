@@ -10,7 +10,9 @@ use wasm_bindgen::prelude::*;
     Debug,
     PartialEq,
     Serialize,
+    Deserialize,
 )]
+#[serde(rename_all = "lowercase")]
 pub struct Card {
     rank: Rank,
     suit: SuitContext,
@@ -55,14 +57,24 @@ impl PartialOrd for Card {
     PartialEq,
     Debug,
     Serialize,
+    Deserialize,
 )]
+#[serde(rename_all = "lowercase")]
 pub enum HandCard {
     Card(Card),
     Joker(u32),    
 }
 
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Serialize,
+    Deserialize,
+)]
+#[serde(rename_all = "lowercase")]
 pub struct PlayedCard {
     card: Card,
     joker: bool

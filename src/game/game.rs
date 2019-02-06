@@ -1,5 +1,10 @@
 use wasm_bindgen::prelude::*;
-use crate::cards::{Suit, SuitContext, Deck, PlayedCard, get_suit_array};
+use crate::cards::{
+    Suit,
+    Deck,
+    PlayedCard,
+    get_suit_array
+};
 use super::Player;
 
 #[wasm_bindgen]

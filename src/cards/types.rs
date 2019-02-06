@@ -3,10 +3,13 @@ use wasm_bindgen::prelude::*;
 
 #[derive(
     Clone,
+    Copy,
     Debug,
     PartialEq,
     Serialize,
+    Deserialize,
 )]
+#[serde(rename_all = "lowercase")]
 pub enum Colour {
     Red, Black
 }
@@ -18,7 +21,9 @@ pub enum Colour {
     Debug,
     PartialEq,
     Serialize,
+    Deserialize,
 )]
+#[serde(rename_all = "lowercase")]
 pub enum Suit{
     Clubs,
     Hearts,
@@ -42,16 +47,19 @@ impl Suit {
     Debug,
     PartialEq,
     Serialize,
+    Deserialize,
 )]
 pub struct SuitContext {
-    suit: Suit,
-    order: [Suit; 4]
+    name: Suit,
+    order: [Suit; 4],
+    colour: Colour,
 }
 
 impl SuitContext {
-    pub fn new(suit: Suit, order: [Suit; 4]) -> SuitContext {
+    pub fn new(name: Suit, order: [Suit; 4]) -> SuitContext {
         let owned_order = order.clone();
-        SuitContext { suit, order: owned_order }
+        let colour = name.colour();
+        SuitContext { name, colour, order: owned_order }
     } 
 }
 
@@ -62,9 +70,9 @@ impl PartialOrd for SuitContext {
         }
 
         let self_size = self.order
-                            .iter().position(|&s| s == self.suit);
+                            .iter().position(|&s| s == self.name);
         let other_size = other.order
-                            .iter().position(|&s| s == other.suit); 
+                            .iter().position(|&s| s == other.name); 
 
         Some(self_size.cmp(&other_size))
     }
@@ -80,6 +88,7 @@ impl PartialOrd for SuitContext {
     Hash,
     Eq,
     Serialize,
+    Deserialize,
 )]
 pub enum Rank{
     Three,

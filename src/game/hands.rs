@@ -1,7 +1,14 @@
 use crate::cards::{PlayedCard, Rank};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq, Copy)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Copy,
+    Serialize,
+    Deserialize,
+)]
 /// Type of hand that can be played
 pub enum Hand{
     /// No cards
@@ -54,7 +61,17 @@ impl Hand {
 }
 
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
+    Copy,
+    Serialize,
+    Deserialize,
+)]
 /// Type of 5 card trick
 pub enum TrickType{
     /// sequence
@@ -71,7 +88,14 @@ pub enum TrickType{
     FiveOfAKind,
 }
 
-#[derive(Clone, Debug, PartialEq, Copy)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    Copy,
+    Serialize,
+    Deserialize,
+)]
 pub struct Trick {
     pub trick_type: TrickType,
     pub cards: [PlayedCard; 5]
