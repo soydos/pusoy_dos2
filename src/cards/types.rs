@@ -6,6 +6,9 @@ use wasm_bindgen::prelude::*;
     Copy,
     Debug,
     PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
     Serialize,
     Deserialize,
 )]
@@ -20,6 +23,9 @@ pub enum Colour {
     Copy,
     Debug,
     PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
     Serialize,
     Deserialize,
 )]
@@ -46,6 +52,8 @@ impl Suit {
     Copy,
     Debug,
     PartialEq,
+    Eq,
+    Ord,
     Serialize,
     Deserialize,
 )]
@@ -87,6 +95,7 @@ impl PartialOrd for SuitContext {
     PartialOrd,
     Hash,
     Eq,
+    Ord,
     Serialize,
     Deserialize,
 )]

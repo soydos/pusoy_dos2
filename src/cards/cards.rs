@@ -9,6 +9,8 @@ use wasm_bindgen::prelude::*;
     Copy,
     Debug,
     PartialEq,
+    Eq,
+    Ord,
     Serialize,
     Deserialize,
 )]
@@ -30,6 +32,10 @@ impl Card {
 
     pub fn get_rank(&self) -> Rank {
         self.rank
+    }
+
+    pub fn get_suit(&self) -> SuitContext {
+        self.suit
     }
 }
 
@@ -71,6 +77,9 @@ pub enum HandCard {
     Clone,
     Copy,
     PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
     Serialize,
     Deserialize,
 )]
@@ -87,6 +96,30 @@ impl PlayedCard {
 
     pub fn get_rank(&self) -> Rank {
         self.card.get_rank()
+    }
+
+    pub fn get_suit(&self) -> SuitContext {
+        self.card.get_suit()
+    }
+
+    // TODO - support 2 low straight?
+    // TODO - push into Rank def?
+    pub fn previous_rank(&self) -> Option<Rank> {
+        match self.get_rank() {
+            Rank::Three => None,
+            Rank::Four => Some(Rank::Three),
+            Rank::Five => Some(Rank::Four),
+            Rank::Six => Some(Rank::Five),
+            Rank::Seven => Some(Rank::Six),
+            Rank::Eight => Some(Rank::Seven),
+            Rank::Nine => Some(Rank::Eight),
+            Rank::Ten => Some(Rank::Nine),
+            Rank::Jack => Some(Rank::Ten),
+            Rank::Queen => Some(Rank::Jack),
+            Rank::King => Some(Rank::Queen),
+            Rank::Ace => Some(Rank::King),
+            Rank::Two => Some(Rank::Ace),
+        }
     }
 }
 
@@ -210,5 +243,20 @@ mod tests {
         assert!(three_of_hearts < four_of_clubs);
     }
 
+    #[test]
+    fn previous_rank_can_be_retrieved() {
+        let reversed = false;
+        let suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
+        let clubs = SuitContext::new(Suit::Clubs, suit_order);
+        let four_of_clubs = Card::new(Rank::Four, clubs, reversed);
+        let played_four = PlayedCard::new(four_of_clubs, false);
+
+        assert_eq!(played_four.previous_rank(), Some(Rank::Three));
+    }
 }
 
