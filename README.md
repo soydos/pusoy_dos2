@@ -2,7 +2,7 @@
 
 2nd attempt at a pusoy dos library
 
-[![Build Status](https://travis-ci.org/benbrunton/pusoy_dos2.svg?branch=master)](https://travis-ci.org/benbrunton/pusoy_dos2)
+[![Build Status](https://travis-ci.org/soydos/pusoy_dos2.svg?branch=master)](https://travis-ci.org/soydos/pusoy_dos2)
 
 ## Aims
 - simple external interface
