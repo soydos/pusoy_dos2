@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn played_joker_has_rank_and_suit() {
-        let joker_ace_of_spades = PlayedCard::new(Rank::Ace, Suit::Spades, false);
+        let joker_ace_of_spades = PlayedCard::new(Rank::Ace, Suit::Spades, true);
 
         assert_eq!(joker_ace_of_spades.get_rank(), Rank::Ace);
         assert_eq!(joker_ace_of_spades.get_suit(), Suit::Spades);
