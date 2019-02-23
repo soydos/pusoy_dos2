@@ -1,5 +1,6 @@
 use crate::cards::{PlayedCard, Rank};
 use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 
 macro_rules! build_fct {
     ($trick:ident, $cards:ident) => (Some(Hand::FiveCardTrick(
