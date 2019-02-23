@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use wasm_bindgen::prelude::*;
+use serde::{Serialize, Deserialize};
 
 #[derive(
     Clone,

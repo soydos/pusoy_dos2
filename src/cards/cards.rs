@@ -1,7 +1,7 @@
 use super::{SuitContext, Rank};
 use std::cmp::Ordering;
 use wasm_bindgen::prelude::*;
-
+use serde::{Serialize, Deserialize};
 
 #[wasm_bindgen]
 #[derive(
