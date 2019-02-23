@@ -58,8 +58,7 @@ mod tests {
 
         let game = Game::new(1, 0, &ids, false);
 
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let three_of_clubs_hand_card = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
+        let three_of_clubs_hand_card = PlayedCard::new(Rank::Three, Suit::Clubs, false);
         let player_move = vec![three_of_clubs_hand_card];
 
         let result = game.play_move("INVALID_PLAYER_ID", player_move);

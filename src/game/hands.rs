@@ -108,7 +108,6 @@ impl Hand {
 
     fn get_previous_rank(card: PlayedCard) -> Option<Rank> {
         match card.get_rank() {
-            Rank::Joker => None,
             Rank::Three => None,
             Rank::Four => Some(Rank::Three),
             Rank::Five => Some(Rank::Four),
@@ -164,8 +163,7 @@ mod tests {
 
     #[test]
     fn a_single_card_is_a_single() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let card = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
+        let card = PlayedCard::new(Rank::Three, Suit::Clubs, false);
 
         let cards = vec![card];
         let hand = Hand::build(cards);
@@ -175,10 +173,8 @@ mod tests {
 
     #[test]
     fn a_pair_of_same_rank_cards_is_a_pair() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let three_of_hearts = Card::new(Rank::Three, Suit::Hearts);
-        let played_three_of_hearts = PlayedCard::new(three_of_hearts, Rank::Three, Suit::Hearts);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_three_of_hearts = PlayedCard::new(Rank::Three, Suit::Hearts, false);
 
         let cards = vec![played_three_of_clubs, played_three_of_hearts];
         let hand = Hand::build(cards);
@@ -191,10 +187,8 @@ mod tests {
 
     #[test]
     fn a_pair_of_different_rank_cards_is_invalid() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let four_of_hearts = Card::new(Rank::Four, Suit::Hearts);
-        let played_four_of_hearts = PlayedCard::new(four_of_hearts, Rank::Four, Suit::Hearts);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_four_of_hearts = PlayedCard::new(Rank::Four, Suit::Hearts, false);
 
         let cards = vec![played_three_of_clubs, played_four_of_hearts];
         let hand = Hand::build(cards);
@@ -204,13 +198,10 @@ mod tests {
 
     #[test]
     fn three_cards_of_same_rank_is_a_prial() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let three_of_hearts = Card::new(Rank::Three, Suit::Hearts);
-        let played_three_of_hearts = PlayedCard::new(three_of_hearts, Rank::Three, Suit::Hearts);
-        let three_of_diamonds = Card::new(Rank::Three, Suit::Diamonds);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_three_of_hearts = PlayedCard::new(Rank::Three, Suit::Hearts, false);
         let played_three_of_diamonds =
-            PlayedCard::new(three_of_diamonds, Rank::Three, Suit::Diamonds);
+            PlayedCard::new(Rank::Three, Suit::Diamonds, false);
 
         let cards = vec![
             played_three_of_clubs,
@@ -232,13 +223,22 @@ mod tests {
 
     #[test]
     fn three_cards_of_different_rank_is_a_invalid() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Hearts);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Hearts);
-        let four_of_hearts = Card::new(Rank::Four, Suit::Hearts);
-        let played_four_of_hearts = PlayedCard::new(four_of_hearts, Rank::Four, Suit::Hearts);
-        let three_of_diamonds = Card::new(Rank::Three, Suit::Diamonds);
+        let played_three_of_clubs = PlayedCard::new(
+            Rank::Three,
+            Suit::Hearts,
+            false
+        );
+        let played_four_of_hearts = PlayedCard::new(
+            Rank::Four,
+            Suit::Hearts,
+            false
+        );
         let played_three_of_diamonds =
-            PlayedCard::new(three_of_diamonds, Rank::Three, Suit::Diamonds);
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Diamonds,
+                false
+            );
 
         let cards = vec![
             played_three_of_clubs,
@@ -253,8 +253,7 @@ mod tests {
 
     #[test]
     fn five_of_a_kind_is_five_of_a_kind() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
 
         let cards = vec![
             played_three_of_clubs,
@@ -281,10 +280,8 @@ mod tests {
 
     #[test]
     fn four_of_a_kind_is_four_of_a_kind() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let four_of_clubs = Card::new(Rank::Four, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let played_four_of_clubs = PlayedCard::new(four_of_clubs, Rank::Four, Suit::Clubs);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_four_of_clubs = PlayedCard::new(Rank::Four, Suit::Clubs, false);
 
         let cards = vec![
             played_three_of_clubs,
@@ -311,10 +308,8 @@ mod tests {
 
     #[test]
     fn full_house_is_a_full_house() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let four_of_clubs = Card::new(Rank::Four, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let played_four_of_clubs = PlayedCard::new(four_of_clubs, Rank::Four, Suit::Clubs);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_four_of_clubs = PlayedCard::new(Rank::Four, Suit::Clubs, false);
 
         let cards = vec![
             played_three_of_clubs,
@@ -341,12 +336,9 @@ mod tests {
 
     #[test]
     fn flush_is_a_flush() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let four_of_clubs = Card::new(Rank::Four, Suit::Clubs);
-        let five_of_clubs = Card::new(Rank::Five, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let played_four_of_clubs = PlayedCard::new(four_of_clubs, Rank::Four, Suit::Clubs);
-        let played_five_of_clubs = PlayedCard::new(five_of_clubs, Rank::Five, Suit::Clubs);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_four_of_clubs = PlayedCard::new(Rank::Four, Suit::Clubs, false);
+        let played_five_of_clubs = PlayedCard::new(Rank::Five, Suit::Clubs, false);
 
         let cards = vec![
             played_five_of_clubs,
@@ -370,16 +362,11 @@ mod tests {
 
     #[test]
     fn straight_is_a_straight() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let four_of_clubs = Card::new(Rank::Four, Suit::Clubs);
-        let five_of_clubs = Card::new(Rank::Five, Suit::Clubs);
-        let six_of_hearts = Card::new(Rank::Six, Suit::Hearts);
-        let seven_of_hearts = Card::new(Rank::Seven, Suit::Hearts);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let played_four_of_clubs = PlayedCard::new(four_of_clubs, Rank::Four, Suit::Clubs);
-        let played_five_of_clubs = PlayedCard::new(five_of_clubs, Rank::Five, Suit::Clubs);
-        let played_six_of_hearts = PlayedCard::new(six_of_hearts, Rank::Six, Suit::Hearts);
-        let played_seven_of_hearts = PlayedCard::new(seven_of_hearts, Rank::Seven, Suit::Hearts);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_four_of_clubs = PlayedCard::new(Rank::Four, Suit::Clubs, false);
+        let played_five_of_clubs = PlayedCard::new(Rank::Five, Suit::Clubs, false);
+        let played_six_of_hearts = PlayedCard::new(Rank::Six, Suit::Hearts, false);
+        let played_seven_of_hearts = PlayedCard::new(Rank::Seven, Suit::Hearts, false);
 
         let cards = vec![
             played_five_of_clubs,
@@ -403,16 +390,11 @@ mod tests {
 
     #[test]
     fn straight_flush_is_a_straight_flush() {
-        let three_of_clubs = Card::new(Rank::Three, Suit::Clubs);
-        let four_of_clubs = Card::new(Rank::Four, Suit::Clubs);
-        let five_of_clubs = Card::new(Rank::Five, Suit::Clubs);
-        let six_of_clubs = Card::new(Rank::Six, Suit::Clubs);
-        let seven_of_clubs = Card::new(Rank::Seven, Suit::Clubs);
-        let played_three_of_clubs = PlayedCard::new(three_of_clubs, Rank::Three, Suit::Clubs);
-        let played_four_of_clubs = PlayedCard::new(four_of_clubs, Rank::Four, Suit::Clubs);
-        let played_five_of_clubs = PlayedCard::new(five_of_clubs, Rank::Five, Suit::Clubs);
-        let played_six_of_clubs = PlayedCard::new(six_of_clubs, Rank::Six, Suit::Clubs);
-        let played_seven_of_clubs = PlayedCard::new(seven_of_clubs, Rank::Seven, Suit::Clubs);
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let played_four_of_clubs = PlayedCard::new(Rank::Four, Suit::Clubs, false);
+        let played_five_of_clubs = PlayedCard::new(Rank::Five, Suit::Clubs, false);
+        let played_six_of_clubs = PlayedCard::new(Rank::Six, Suit::Clubs, false);
+        let played_seven_of_clubs = PlayedCard::new(Rank::Seven, Suit::Clubs, false);
 
         let cards = vec![
             played_five_of_clubs,

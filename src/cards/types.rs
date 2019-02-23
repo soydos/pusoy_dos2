@@ -6,7 +6,6 @@ use wasm_bindgen::prelude::*;
 pub enum Colour {
     Red,
     Black,
-    Joker,
 }
 
 #[wasm_bindgen]
@@ -17,7 +16,6 @@ pub enum Suit {
     Hearts,
     Diamonds,
     Spades,
-    Joker,
 }
 
 impl Suit {
@@ -25,7 +23,6 @@ impl Suit {
         match *self {
             Suit::Clubs | Suit::Spades => Colour::Black,
             Suit::Hearts | Suit::Diamonds => Colour::Red,
-            Suit::Joker => Colour::Joker,
         }
     }
 }
@@ -47,7 +44,6 @@ pub enum Rank {
     King,
     Ace,
     Two,
-    Joker,
 }
 
 pub fn get_suit_array() -> [Suit; 4] {
@@ -81,6 +77,5 @@ mod tests {
         assert_eq!(Suit::Hearts.colour(), Colour::Red);
         assert_eq!(Suit::Diamonds.colour(), Colour::Red);
         assert_eq!(Suit::Spades.colour(), Colour::Black);
-        assert_eq!(Suit::Joker.colour(), Colour::Joker);
     }
 }
