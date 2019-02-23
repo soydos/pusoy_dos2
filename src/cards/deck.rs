@@ -1,6 +1,6 @@
 use rand::seq::SliceRandom;
 
-use super::{get_rank_array, get_suit_array, Card, Rank, Suit};
+use super::{get_rank_array, get_suit_array, Card};
 
 #[derive(Clone)]
 pub struct Deck(Vec<Card>);
