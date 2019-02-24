@@ -10,5 +10,6 @@ deploy:
   provider: cargo
   on:
     branch: master
+    rust: stable
   token:
     secure: HkkBqXFxjxySKZUKNkt77c8oOqtR/JhYblK+wIZ/tNuZF/ROwm1wZnkO5O5LL39DUXMgX47ieAa2FytceJiZSAobUp5/GY9jif3DHMPOgeGnP+7DJwGsO9GJl1jr22O5u55kIZEPjmX8qWgnpYyZ4kXfBRDXMYqz1ur9NtGtGVpQOb9rXp+ADU+of6u3Z1iFzyaG2gh9XfkXCJHch7K/F3MzjqEtMJ+rVKYsraYvf84gNUCygLYLzLnIC5RYepLRNArRwuM5IYwOlyo39+m8x9k+wEzI9n04CoDMKPbkE0aIHkkdLBXT+edPvYaoatDS6wTWG0jjmEeHi0LwhwP8o8FDqjThnwCHRrOoX0z5cn92rM7SJMHMAVMt2c+R6UNhqwceqwWxo18a/LkCfrf6XoWRct8krh4nvHTN+4zii+Q8dQaKCoDHh9bnHa/9dpVaBj0SZWWQPm4m4/CNWawWZcSRCv5dT/OZbk5lppzm60X68Gs+bx/ty+Y2Xk4bHQlKcrrWnPGjHeuodk11hkOzAxsSbgPjTTKbCqIPFp99SH8nrPRfTsxHePiYvRbw9iXev3ljwS84g0MRrp2C/dtcWDnamQJvHZPuU0I8Q6GqHeH48WF822kAF5igr0Ry4rJj+e8e/t/Tv7FFROv1FC5mPFo+1gQ5yXC2ntYuTAAzwKU=
