@@ -1,28 +1,18 @@
 use rand::seq::SliceRandom;
 
-use super::{
-    HandCard,
-    Card,
-    SuitContext,
-    get_rank_array
-};
+use super::{get_rank_array, get_suit_array, Card};
 
 #[derive(Clone)]
-pub struct Deck(Vec<HandCard>);
+pub struct Deck(Vec<Card>);
 
 impl Deck {
-    pub fn new(
-        number_of_decks: u8,
-        number_of_jokers: u8,
-        suits: [SuitContext; 4],
-    ) -> Deck {
+    pub fn new(number_of_decks: u8, number_of_jokers: u8) -> Deck {
         let ranks = get_rank_array();
-        let mut cards = vec!();
+        let suits = get_suit_array();
+        let mut cards = vec![];
 
         while cards.len() < number_of_jokers as usize {
-            cards.push(
-                HandCard::Joker(cards.len() as u32)
-            );
+            cards.push(Card::Joker);
         }
 
         let mut deck_count = 0;
@@ -30,12 +20,11 @@ impl Deck {
         while deck_count < number_of_decks {
             for suit in &suits {
                 for rank in &ranks {
-                    let card = Card::new(
-                        rank.clone(),
-                        suit.clone(),
-                        false
-                    );
-                    cards.push(HandCard::Card(card));
+                    let card = Card::Standard {
+                        rank: rank.clone(),
+                        suit: suit.clone(),
+                    };
+                    cards.push(card);
                 }
             }
             deck_count += 1;
@@ -49,13 +38,13 @@ impl Deck {
         self.0.shuffle(&mut rng);
     }
 
-    pub fn deal(&self, players: u8) -> Vec<Vec<HandCard>> {
+    pub fn deal(&self, players: u8) -> Vec<Vec<Card>> {
         let mut index = 0;
         let mut deck_stack = self.0.clone();
-        let mut dealt_stacks = self.get_nested_vec(players); 
+        let mut dealt_stacks = self.get_nested_vec(players);
 
         while deck_stack.len() > 0 {
-            let card = deck_stack.pop(); 
+            let card = deck_stack.pop();
             dealt_stacks[index].push(card.unwrap());
             index = self.rotate_index_to_max(index, players);
         }
@@ -67,14 +56,14 @@ impl Deck {
         self.0.len()
     }
 
-    pub fn to_vec(&self) -> Vec<HandCard> {
+    pub fn to_vec(&self) -> Vec<Card> {
         self.0.clone()
     }
 
     fn get_nested_vec<T>(&self, players: u8) -> Vec<Vec<T>> {
-        let mut dealt_stacks = vec!();
+        let mut dealt_stacks = vec![];
         while dealt_stacks.len() < players as usize {
-            dealt_stacks.push(vec!());
+            dealt_stacks.push(vec![]);
         }
 
         dealt_stacks
@@ -82,7 +71,7 @@ impl Deck {
 
     fn rotate_index_to_max(&self, index: usize, max: u8) -> usize {
         if index + 1 < max as usize {
-           index + 1
+            index + 1
         } else {
             0
         }
@@ -95,69 +84,31 @@ mod tests {
 
     #[test]
     fn it_can_create_a_simple_52_deck() {
-        let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-        let suits = get_suit_array(suit_order);
-        let deck = Deck::new(1, 0, suits);
+        let deck = Deck::new(1, 0);
         assert_eq!(deck.count(), 52);
     }
 
     #[test]
     fn it_can_add_jokers() {
-        let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-        let suits = get_suit_array(suit_order);
-        let deck = Deck::new(1, 1, suits);
+        let deck = Deck::new(1, 1);
         assert_eq!(deck.count(), 53);
-
     }
 
     #[test]
     fn it_can_do_multiple_decks() {
-        let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-        let suits = get_suit_array(suit_order);
-        let deck = Deck::new(2, 0, suits);
+        let deck = Deck::new(2, 0);
         assert_eq!(deck.count(), 104);
-
     }
 
     #[test]
     fn it_can_add_jokers_with_multiple_decks() {
-        let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-        let suits = get_suit_array(suit_order);
-        let deck = Deck::new(2, 1, suits);
+        let deck = Deck::new(2, 1);
         assert_eq!(deck.count(), 105);
-
     }
 
     #[test]
     fn it_can_shuffle() {
-         let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-        let suits = get_suit_array(suit_order);
-        let mut deck = Deck::new(1, 0, suits);
+        let mut deck = Deck::new(1, 0);
 
         let original_order = deck.to_vec();
 
@@ -165,22 +116,16 @@ mod tests {
 
         let new_order = deck.to_vec();
 
-        let not_deep_equal = original_order.iter()
-           .zip(new_order)
-           .any(|(a, b)| a.clone() != b.clone());
+        let not_deep_equal = original_order
+            .iter()
+            .zip(new_order)
+            .any(|(a, b)| a.clone() != b.clone());
         assert!(not_deep_equal);
     }
 
     #[test]
     fn it_can_deal() {
-         let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-        let suits = get_suit_array(suit_order);
-        let deck = Deck::new(1, 0, suits);
+        let deck = Deck::new(1, 0);
 
         let dealt = deck.deal(4);
         assert_eq!(dealt.len(), 4);

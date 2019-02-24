@@ -1,64 +1,48 @@
-use wasm_bindgen::prelude::*;
-use crate::cards::{
-    Suit,
-    Deck,
-    PlayedCard,
-    get_suit_array
-};
 use super::Player;
+use crate::cards::{Deck, PlayedCard};
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct Game {
-    num_decks: u8,
-    num_jokers: u8,
+    _num_decks: u8,
+    _num_jokers: u8,
     players: Vec<Player>,
-    reversals_enabled: bool,
-    suits: [Suit; 4],
+    _reversals_enabled: bool,
 }
 
 impl Game {
     pub fn new(
-        num_decks: u8,
-        num_jokers: u8,
+        _num_decks: u8,
+        _num_jokers: u8,
         player_ids: &[String],
-        suits: [Suit; 4],
-        reversals_enabled: bool,
+        _reversals_enabled: bool,
     ) -> Game {
-
-
-        let suit_context = get_suit_array(suits);
-        let mut deck = Deck::new(
-            num_decks,
-            num_jokers,
-            suit_context
-        );
+        let mut deck = Deck::new(_num_decks, _num_jokers);
         deck.shuffle();
         let cards = deck.deal(player_ids.len() as u8);
 
-        let players = cards.iter().zip(player_ids)
+        let players = cards
+            .iter()
+            .zip(player_ids)
             .map(|(c, id)| Player::new(id.to_string(), c.clone()))
             .collect();
 
-
         Game {
-            num_decks,
-            num_jokers,
-            suits,
+            _num_decks,
+            _num_jokers,
             players,
-            reversals_enabled,
+            _reversals_enabled,
         }
-
     }
 
-    fn play_move(&self, player_id: &str, player_move: Vec<PlayedCard>) -> Result<(), ()> {
+    pub fn play_move(&self, _player_id: &str, _player_move: Vec<PlayedCard>) -> Result<(), ()> {
         Err(())
     }
 
     pub fn get_player(&self, id: &str) -> Option<Player> {
-        match self.players.iter()
-            .find(|&p| p.get_id() == id) {
+        match self.players.iter().find(|&p| p.get_id() == id) {
             Some(p) => Some(p.clone()),
-            _        => None
+            _ => None,
         }
     }
 }
@@ -70,29 +54,18 @@ mod tests {
 
     #[test]
     fn invalid_player_cannot_make_a_move() {
-        let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-
         let ids = [String::from("a"), String::from("b"), String::from("c")];
 
-        let game = Game::new(1, 0, &ids, suit_order, false);
+        let game = Game::new(1, 0, &ids, false);
 
-        let clubs = SuitContext::new(Suit::Clubs, suit_order);
-        let three_of_clubs = Card::new(Rank::Three, clubs, false);
-        let three_of_clubs_hand_card = PlayedCard::new(three_of_clubs, false);
-        let player_move = vec!(
-            three_of_clubs_hand_card
-        );
+        let three_of_clubs_hand_card = PlayedCard::new(Rank::Three, Suit::Clubs, false);
+        let player_move = vec![three_of_clubs_hand_card];
 
-        let result = game.play_move("INVALID_PLAYER_ID", player_move); 
+        let result = game.play_move("INVALID_PLAYER_ID", player_move);
 
         let expected_result = match result {
             Err(_) => true,
-            _ => false
+            _ => false,
         };
 
         assert!(expected_result);
@@ -100,15 +73,8 @@ mod tests {
 
     #[test]
     fn it_allows_retrieving_a_player_by_id() {
-        let suit_order = [
-            Suit::Clubs,
-            Suit::Hearts,
-            Suit::Diamonds,
-            Suit::Spades,
-        ];
-
         let ids = [String::from("a"), String::from("b"), String::from("c")];
-        let game = Game::new(1, 0, &ids, suit_order, false);
+        let game = Game::new(1, 0, &ids, false);
 
         let player_a = game.get_player("a").unwrap();
 
@@ -116,4 +82,3 @@ mod tests {
     }
 
 }
-
