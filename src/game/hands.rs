@@ -200,8 +200,7 @@ mod tests {
     fn three_cards_of_same_rank_is_a_prial() {
         let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Clubs, false);
         let played_three_of_hearts = PlayedCard::new(Rank::Three, Suit::Hearts, false);
-        let played_three_of_diamonds =
-            PlayedCard::new(Rank::Three, Suit::Diamonds, false);
+        let played_three_of_diamonds = PlayedCard::new(Rank::Three, Suit::Diamonds, false);
 
         let cards = vec![
             played_three_of_clubs,
@@ -223,22 +222,9 @@ mod tests {
 
     #[test]
     fn three_cards_of_different_rank_is_a_invalid() {
-        let played_three_of_clubs = PlayedCard::new(
-            Rank::Three,
-            Suit::Hearts,
-            false
-        );
-        let played_four_of_hearts = PlayedCard::new(
-            Rank::Four,
-            Suit::Hearts,
-            false
-        );
-        let played_three_of_diamonds =
-            PlayedCard::new(
-                Rank::Three,
-                Suit::Diamonds,
-                false
-            );
+        let played_three_of_clubs = PlayedCard::new(Rank::Three, Suit::Hearts, false);
+        let played_four_of_hearts = PlayedCard::new(Rank::Four, Suit::Hearts, false);
+        let played_three_of_diamonds = PlayedCard::new(Rank::Three, Suit::Diamonds, false);
 
         let cards = vec![
             played_three_of_clubs,

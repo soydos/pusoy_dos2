@@ -2,24 +2,25 @@ use super::{Rank, Suit};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
 pub enum Card {
     Joker,
-    Standard(Rank, Suit)
+    Standard { rank: Rank, suit: Suit },
 }
 
 impl Card {
     pub fn get_rank(&self) -> Option<Rank> {
         match *self {
-            Card::Standard(r, _) => Some(r),
-            _                    => None
+            Card::Standard { rank, .. } => Some(rank),
+            _ => None,
         }
     }
 
     pub fn get_suit(&self) -> Option<Suit> {
         match *self {
-            Card::Standard(_, s) => Some(s),
-            _                    => None
+            Card::Standard { suit, .. } => Some(suit),
+            _ => None,
         }
     }
 }
@@ -29,12 +30,16 @@ impl Card {
 pub struct PlayedCard {
     rank: Rank,
     suit: Suit,
-    is_joker: bool
+    is_joker: bool,
 }
 
 impl PlayedCard {
     pub fn new(rank: Rank, suit: Suit, is_joker: bool) -> PlayedCard {
-        PlayedCard { is_joker, rank, suit }
+        PlayedCard {
+            is_joker,
+            rank,
+            suit,
+        }
     }
 
     pub fn get_rank(&self) -> Rank {
@@ -46,7 +51,7 @@ impl PlayedCard {
     }
 
     pub fn get_is_joker(&self) -> bool {
-      self.is_joker
+        self.is_joker
     }
 }
 
@@ -56,7 +61,7 @@ mod tests {
 
     #[test]
     fn card_has_rank_and_suit() {
-        let ace_of_spades = Card::Standard(Rank::Ace, Suit::Spades);
+        let ace_of_spades = Card::Standard { rank: Rank::Ace, suit: Suit::Spades };
 
         assert_eq!(ace_of_spades.get_rank().unwrap(), Rank::Ace);
         assert_eq!(ace_of_spades.get_suit().unwrap(), Suit::Spades);

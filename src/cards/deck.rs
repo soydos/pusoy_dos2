@@ -20,7 +20,10 @@ impl Deck {
         while deck_count < number_of_decks {
             for suit in &suits {
                 for rank in &ranks {
-                    let card = Card::Standard(rank.clone(), suit.clone());
+                    let card = Card::Standard {
+                        rank: rank.clone(),
+                        suit: suit.clone(),
+                    };
                     cards.push(card);
                 }
             }
