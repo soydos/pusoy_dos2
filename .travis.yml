@@ -6,11 +6,10 @@ rust:
 matrix:
   allow_failures:
   - rust: nightly
-before_deploy:
-  - sed -E "0,/(version.*)\"$/s//\1\#$TRAVIS_BUILD_NUMBER\"/" Cargo.toml > Cargo.toml
 deploy:
   provider: cargo
   on:
+    tags: true
     branch: master
     rust: stable
   token:
