@@ -1,5 +1,5 @@
 use super::{Player, Round};
-use crate::cards::{Card, Rank, Suit, Deck, PlayedCard};
+use crate::cards::{Deck, PlayedCard};
 use wasm_bindgen::prelude::*;
 
 // todo - suit order is a property of game
@@ -34,7 +34,7 @@ impl Game {
         Game {
             _num_decks,
             _num_jokers,
-            players: players,
+            players,
             _reversals_enabled,
             round
         }
