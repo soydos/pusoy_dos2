@@ -1,4 +1,4 @@
-use super::{Player, Hand, compare_hand};
+use super::{Player, Hand, compare_hands};
 use crate::cards::{Suit, Rank, Card, PlayedCard};
 
 #[derive(Debug, PartialEq)]
@@ -84,7 +84,7 @@ impl Round {
     ) -> bool {
         // todo - use suit and rank order to check which hand
         // beats which
-        compare_hand(
+        compare_hands(
             self.last_move.expect("cannot compare when no last_move"),
             cards,
             self.suit_order,
