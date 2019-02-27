@@ -62,6 +62,7 @@ impl Round {
             }
         }
 
+        // todo - return updated Round
         Ok(self.clone())
     }
 
@@ -82,8 +83,6 @@ impl Round {
         &self,
         cards: Hand
     ) -> bool {
-        // todo - use suit and rank order to check which hand
-        // beats which
         compare_hands(
             self.last_move.expect("cannot compare when no last_move"),
             cards,
@@ -330,5 +329,10 @@ mod tests {
             round.submit_move("a", played_hand).is_ok()
         );
     }
+
+    // todo:
+    // - only current player can submit a move
+    // - player must have card in hand
+    // - passing empties the table
 }
 
