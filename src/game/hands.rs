@@ -40,6 +40,16 @@ impl Hand {
         }
     }
 
+    pub fn to_cards(&self) -> Vec<PlayedCard> {
+        match *self {
+            Hand::Pass => vec!(),
+            Hand::Single(c) => vec!(c),
+            Hand::Pair(c, d) => vec!(c, d),
+            Hand::Prial(c, d, e) => vec!(c, d, e),
+            Hand::FiveCardTrick(trick) => trick.cards.to_vec()
+        }
+    }
+
     fn check_valid_pair(cards: Vec<PlayedCard>) -> Option<Hand> {
         if Self::get_counts(cards.clone()).len() == 1 {
             Some(Hand::Pair(cards[0], cards[1]))

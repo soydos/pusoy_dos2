@@ -1,5 +1,10 @@
 use super::{Player, Round};
-use crate::cards::{Deck, PlayedCard};
+use crate::cards::{
+    Deck,
+    PlayedCard,
+    get_suit_array,
+    get_rank_array
+};
 use wasm_bindgen::prelude::*;
 
 // todo - suit order is a property of game
@@ -29,7 +34,13 @@ impl Game {
             .map(|(c, id)| Player::new(id.to_string(), c.clone()))
             .collect();
 
-        let round = Round::new(players.clone(), None);
+        let round = Round::new(
+            players.clone(),
+            None,
+            None,
+            get_suit_array(),
+            get_rank_array(),
+        );
 
         Game {
             _num_decks,
