@@ -334,5 +334,6 @@ mod tests {
     // - only current player can submit a move
     // - player must have card in hand
     // - passing empties the table
+    // - removing card from player on submit
 }
 

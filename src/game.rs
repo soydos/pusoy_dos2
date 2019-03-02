@@ -1,5 +1,6 @@
 mod game;
 mod player;
+#[macro_use]
 mod hands;
 mod round;
 mod comparisons;
