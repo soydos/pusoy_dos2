@@ -1,4 +1,4 @@
-use super::{Player, Round};
+use super::{Player, Round, SubmitError};
 use crate::cards::{
     Deck,
     PlayedCard,
@@ -51,8 +51,11 @@ impl Game {
         }
     }
 
-    pub fn play_move(&self, _player_id: &str, _player_move: Vec<PlayedCard>) -> Result<(), ()> {
-        Err(())
+    pub fn play_move(&self, player_id: &str, player_move: Vec<PlayedCard>) -> Result<(), SubmitError> {
+        match self.round.submit_move(player_id, player_move) {
+            Ok(_) => Ok(()),
+            Err(x)   => Err(x)
+        }
     }
 
     pub fn get_player(&self, id: &str) -> Option<Player> {
@@ -71,25 +74,6 @@ impl Game {
 mod tests {
     use super::*;
     use crate::cards::*;
-
-    #[test]
-    fn invalid_player_cannot_make_a_move() {
-        let ids = [String::from("a"), String::from("b"), String::from("c")];
-
-        let game = Game::new(1, 0, &ids, false);
-
-        let three_of_clubs_hand_card = PlayedCard::new(Rank::Three, Suit::Clubs, false);
-        let player_move = vec![three_of_clubs_hand_card];
-
-        let result = game.play_move("INVALID_PLAYER_ID", player_move);
-
-        let expected_result = match result {
-            Err(_) => true,
-            _ => false,
-        };
-
-        assert!(expected_result);
-    }
 
     #[test]
     fn it_allows_retrieving_a_player_by_id() {

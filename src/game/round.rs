@@ -6,6 +6,7 @@ pub enum SubmitError {
     FirstRoundPass,
     FirstHandMustBeThreeClubs,
     HandNotHighEnough,
+    NotCurrentPlayer,
 }
 
 #[derive(Clone, Debug)]
@@ -43,9 +44,13 @@ impl Round {
 
     pub fn submit_move(
         &self,
-        _user_id: &str,
+        user_id: &str,
         cards:Vec<PlayedCard>
     ) -> Result<Round, SubmitError> {
+
+        if user_id != self.get_next_player().unwrap_or("invalid_player") {
+            return Err(SubmitError::NotCurrentPlayer);
+        }
 
         if self.last_move == None {
             if cards.len() == 0 {
@@ -330,8 +335,43 @@ mod tests {
         );
     }
 
+    #[test]
+    fn invalid_player_cannot_make_a_move() {
+        let a_cards = vec![
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+        ];
+        let b_cards = vec![
+            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
+        ];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let players = vec![player_a, player_b];
+        let last_move = Some(
+            Hand::Single(
+                PlayedCard::new(Rank::Three, Suit::Clubs, false)
+            )
+        );
+        let round = Round::new(
+            players,
+            Some("a"),
+            last_move,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+        );
+        let played_hand = vec!(
+            PlayedCard::new(Rank::Six, Suit::Clubs, false)
+        );
+        
+        let err = round.submit_move("b", played_hand).err().unwrap();
+        assert_eq!(
+            err,
+            SubmitError::NotCurrentPlayer
+        );
+
+    }
+
     // todo:
-    // - only current player can submit a move
     // - player must have card in hand
     // - passing empties the table
     // - removing card from player on submit
