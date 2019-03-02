@@ -2,6 +2,7 @@ use crate::cards::{PlayedCard, Rank};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+#[macro_export]
 macro_rules! build_fct {
     ($trick:ident, $cards:ident) => {
         Some(Hand::FiveCardTrick(Trick {
@@ -37,6 +38,16 @@ impl Hand {
             3 => Self::check_valid_prial(cards),
             5 => Self::check_valid_fct(cards),
             _ => None,
+        }
+    }
+
+    pub fn to_cards(&self) -> Vec<PlayedCard> {
+        match *self {
+            Hand::Pass => vec!(),
+            Hand::Single(c) => vec!(c),
+            Hand::Pair(c, d) => vec!(c, d),
+            Hand::Prial(c, d, e) => vec!(c, d, e),
+            Hand::FiveCardTrick(trick) => trick.cards.to_vec()
         }
     }
 
@@ -93,7 +104,7 @@ impl Hand {
         c.iter().all(|&card| card.get_suit() == c[0].get_suit())
     }
 
-    fn get_counts(cards: Vec<PlayedCard>) -> HashMap<Rank, usize> {
+    pub fn get_counts(cards: Vec<PlayedCard>) -> HashMap<Rank, usize> {
         cards.iter().fold(HashMap::new(), |mut acc, &card| {
             *acc.entry(card.get_rank()).or_insert(0) += 1;
             acc
