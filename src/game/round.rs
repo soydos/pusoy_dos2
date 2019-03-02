@@ -55,6 +55,11 @@ impl Round {
             return Err(SubmitError::NotCurrentPlayer);
         }
 
+        let hand = Hand::build(cards.clone());
+        if hand.is_none() {
+            return Err(SubmitError::InvalidHand);
+        }
+
         if self.last_move == None {
             if cards.len() == 0 {
                 return Err(SubmitError::FirstRoundPass);
@@ -64,11 +69,6 @@ impl Round {
                 );
             }
         } else {
-            let hand = Hand::build(cards);
-            if hand.is_none() {
-                return Err(SubmitError::InvalidHand);
-            }
-
             if !self.hand_beats_last_move(hand.unwrap()) {
                return Err(SubmitError::HandNotHighEnough);
             }
@@ -414,9 +414,41 @@ mod tests {
 
     }
 
+    #[test]
+    fn it_should_be_a_valid_hand_even_at_start() {
+        let a_cards = vec![
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+        ];
+        let b_cards = vec![
+            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
+        ];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let players = vec![player_a, player_b];
+        let round = Round::new(
+            players,
+            None,
+            None,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+        );
+        let played_hand = vec!(
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+        );
+        
+        let err = round.submit_move("a", played_hand).err().unwrap();
+        assert_eq!(
+            err,
+            SubmitError::InvalidHand
+        );
+
+    }
+
     // todo:
     // - player must have card in hand
     // - passing empties the table
-    // - removing card from player on submit
+    // - removing card from player on submit and updating next player
 }
 
