@@ -602,12 +602,68 @@ mod tests {
     }
 
     #[test]
+    fn full_house_is_resolved_on_highest_of_3_cards_suit_if_rank_equal() {
+         let hand1_cards = [
+            PlayedCard::new(Rank::Five, Suit::Clubs, false),
+            PlayedCard::new(Rank::Five, Suit::Hearts, false),
+            PlayedCard::new(Rank::Five, Suit::Diamonds, false),
+            PlayedCard::new(Rank::Four, Suit::Clubs, false),
+            PlayedCard::new(Rank::Four, Suit::Hearts, false),
+        ];
+        let hand1 = build_fct!(FullHouse, hand1_cards).unwrap();
+
+        let hand2_cards = [
+            PlayedCard::new(Rank::Five, Suit::Clubs, false),
+            PlayedCard::new(Rank::Five, Suit::Spades, false),
+            PlayedCard::new(Rank::Five, Suit::Hearts, false),
+            PlayedCard::new(Rank::Two, Suit::Clubs, false),
+            PlayedCard::new(Rank::Two, Suit::Diamonds, false),
+        ];
+        let hand2 = build_fct!(FullHouse, hand2_cards).unwrap();
+
+        assert!(compare_hands(
+            hand1,
+            hand2,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+        ));
+    }
+
+    #[test]
     fn four_of_a_kind_is_resolved_by_highest_of_4_cards() {
          let hand1_cards = [
             PlayedCard::new(Rank::Five, Suit::Clubs, false),
             PlayedCard::new(Rank::Four, Suit::Hearts, false),
             PlayedCard::new(Rank::Four, Suit::Diamonds, false),
             PlayedCard::new(Rank::Four, Suit::Clubs, false),
+            PlayedCard::new(Rank::Four, Suit::Hearts, false),
+        ];
+        let hand1 = build_fct!(FourOfAKind, hand1_cards).unwrap();
+
+        let hand2_cards = [
+            PlayedCard::new(Rank::Five, Suit::Clubs, false),
+            PlayedCard::new(Rank::Five, Suit::Spades, false),
+            PlayedCard::new(Rank::Five, Suit::Hearts, false),
+            PlayedCard::new(Rank::Five, Suit::Clubs, false),
+            PlayedCard::new(Rank::Two, Suit::Diamonds, false),
+        ];
+        let hand2 = build_fct!(FourOfAKind, hand2_cards).unwrap();
+
+        assert!(compare_hands(
+            hand1,
+            hand2,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+        ));
+    }
+
+    #[test]
+    fn four_of_a_kind_is_resolved_by_highest_of_4_cards_suit_if_rank_equal() {
+         let hand1_cards = [
+            PlayedCard::new(Rank::Five, Suit::Clubs, false),
+            PlayedCard::new(Rank::Five, Suit::Hearts, false),
+            PlayedCard::new(Rank::Five, Suit::Diamonds, false),
+            PlayedCard::new(Rank::Five, Suit::Clubs, false),
             PlayedCard::new(Rank::Four, Suit::Hearts, false),
         ];
         let hand1 = build_fct!(FourOfAKind, hand1_cards).unwrap();
