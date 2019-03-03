@@ -6,8 +6,8 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct Game {
-    _num_decks: u8,
-    _num_jokers: u8,
+    num_decks: u8,
+    num_jokers: u8,
     players: Vec<Player>,
     _reversals_enabled: bool,
     round: Round,
@@ -15,12 +15,12 @@ pub struct Game {
 
 impl Game {
     pub fn new(
-        _num_decks: u8,
-        _num_jokers: u8,
+        num_decks: u8,
+        num_jokers: u8,
         player_ids: &[String],
         _reversals_enabled: bool,
     ) -> Game {
-        let mut deck = Deck::new(_num_decks, _num_jokers);
+        let mut deck = Deck::new(num_decks, num_jokers);
         deck.shuffle();
         let cards = deck.deal(player_ids.len() as u8);
 
@@ -34,13 +34,13 @@ impl Game {
             players.clone(),
             None,
             None,
-            get_suit_array(),
+            get_suit_array(), // todo - set when game is setup
             get_rank_array(),
         );
 
         Game {
-            _num_decks,
-            _num_jokers,
+            num_decks,
+            num_jokers,
             players,
             _reversals_enabled,
             round,
@@ -48,12 +48,22 @@ impl Game {
     }
 
     pub fn play_move(
-        &self,
+        &mut self,
         player_id: &str,
         player_move: Vec<PlayedCard>,
     ) -> Result<(), SubmitError> {
         match self.round.submit_move(player_id, player_move) {
-            Ok(_) => Ok(()),
+            Ok(new_round) => {
+                self.players = self.players.iter().map(|p| {
+                    if p.get_id() == player_id {
+                        new_round.get_player(player_id)
+                            .unwrap_or(p.clone())
+                    } else {
+                        p.clone()
+                    }
+                }).collect();
+                Ok(())
+            },
             Err(x) => Err(x),
         }
     }
@@ -86,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn when_game_hasnt_started_player_with_3clubs_starts() {
+    fn when_game_hasnt_started_player_with_lowest_card_starts() {
         let ids = [String::from("a"), String::from("b")];
         let game = Game::new(1, 0, &ids, false);
 
@@ -104,4 +114,31 @@ mod tests {
             assert_eq!(next_player, "b");
         }
     }
+
+    #[test]
+    fn player_loses_cards_that_it_plays() {
+        let ids = [String::from("a"), String::from("b")];
+        let mut game = Game::new(1, 0, &ids, false);
+
+        let next_player = game.get_next_player()
+            .unwrap().to_owned();
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let initial_hand_size = game.get_player(&next_player)
+            .unwrap().get_hand().len();
+
+        let _ = game.play_move(&next_player, hand);
+
+        let eventual_hand_size = game.get_player(&next_player)
+            .unwrap().get_hand().len();
+
+        assert_eq!(initial_hand_size - 1, eventual_hand_size);
+    }
+
 }
