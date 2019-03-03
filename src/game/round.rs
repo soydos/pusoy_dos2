@@ -93,11 +93,25 @@ impl Round {
         Ok(Self::new(
             players,
             self.next_player,
-            self.last_move,
+            hand,
             self.suit_order,
             self.rank_order,
         ))
 
+    }
+
+    pub fn get_player(&self, user_id: &str) -> Option<Player> {
+        for player in self.players.iter() {
+            if player.get_id() == user_id {
+                return Some(player.clone());
+            }
+        }
+
+        None
+    }
+
+    pub fn get_last_move(&self) -> Option<Hand> {
+        self.last_move
     }
 
     fn get_starting_player(&self) -> Option<&str> {
@@ -113,15 +127,6 @@ impl Round {
         None
     }
 
-    pub fn get_player(&self, user_id: &str) -> Option<Player> {
-        for player in self.players.iter() {
-            if player.get_id() == user_id {
-                return Some(player.clone());
-            }
-        }
-
-        None
-    }
 
     fn hand_beats_last_move(&self, cards: Hand) -> bool {
         compare_hands(
@@ -626,8 +631,48 @@ mod tests {
         assert_eq!(new_player_a.get_hand().len(), 1);
     }
 
+    #[test]
+    fn a_valid_move_is_set_as_last_move() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
+        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let players = vec![player_a, player_b];
+        let round = Round::new(
+            players,
+            None,
+            None,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER
+        );
+        let played_hand = vec![
+            PlayedCard::new(Rank::Three, Suit::Clubs, false)
+        ];
+
+        let new_round = round.submit_move("a", played_hand)
+            .unwrap();
+
+        assert_eq!(
+            new_round.get_last_move(),
+            Some(Hand::Single(PlayedCard::new(
+                Rank::Three, Suit::Clubs, false
+            )))
+        );
+    }
+
     // todo:
     // - update next player
-    // - update last_move
     // - passing empties the table
 }
