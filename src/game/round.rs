@@ -1,6 +1,6 @@
-use super::{Player, Hand, compare_hands};
-use crate::cards::{Suit, Rank, Card, PlayedCard};
-use serde::{Serialize};
+use super::{compare_hands, Hand, Player};
+use crate::cards::{Card, PlayedCard, Rank, Suit};
+use serde::Serialize;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub enum SubmitError {
@@ -12,7 +12,7 @@ pub enum SubmitError {
 }
 
 #[derive(Clone, Debug)]
-pub struct Round{
+pub struct Round {
     players: Vec<Player>,
     next_player: Option<&'static str>,
     last_move: Option<Hand>,
@@ -28,7 +28,7 @@ impl Round {
         suit_order: [Suit; 4],
         rank_order: [Rank; 13],
     ) -> Round {
-        Round{
+        Round {
             players,
             next_player,
             last_move,
@@ -40,18 +40,12 @@ impl Round {
     pub fn get_next_player(&self) -> Option<&str> {
         match self.next_player {
             None => self.get_starting_player(),
-            x    => x
+            x => x,
         }
     }
 
-    pub fn submit_move(
-        &self,
-        user_id: &str,
-        cards:Vec<PlayedCard>
-    ) -> Result<Round, SubmitError> {
-
-        if user_id != self.get_next_player()
-            .unwrap_or("invalid_player") {
+    pub fn submit_move(&self, user_id: &str, cards: Vec<PlayedCard>) -> Result<Round, SubmitError> {
+        if user_id != self.get_next_player().unwrap_or("invalid_player") {
             return Err(SubmitError::NotCurrentPlayer);
         }
 
@@ -63,14 +57,12 @@ impl Round {
         if self.last_move == None {
             if cards.len() == 0 {
                 return Err(SubmitError::FirstRoundPass);
-            } else if !Self::contains_three_clubs(cards) {
-                return Err(
-                    SubmitError::FirstHandMustBeThreeClubs
-                );
+            } else if !self.contains_lowest_card(cards) {
+                return Err(SubmitError::FirstHandMustBeThreeClubs);
             }
         } else {
             if !self.hand_beats_last_move(hand.unwrap()) {
-               return Err(SubmitError::HandNotHighEnough);
+                return Err(SubmitError::HandNotHighEnough);
             }
         }
 
@@ -79,22 +71,19 @@ impl Round {
     }
 
     fn get_starting_player(&self) -> Option<&str> {
-        let three_clubs = Card::Standard{
-            suit: Suit::Clubs,
-            rank: Rank::Three,
+        let lowest_card = Card::Standard {
+            suit: self.suit_order[0],
+            rank: self.rank_order[0],
         };
         for player in self.players.iter() {
-            if player.get_hand().contains(&three_clubs) {
+            if player.has_card(&lowest_card) {
                 return Some(player.get_id());
             }
         }
         None
     }
 
-    fn hand_beats_last_move(
-        &self,
-        cards: Hand
-    ) -> bool {
+    fn hand_beats_last_move(&self, cards: Hand) -> bool {
         compare_hands(
             self.last_move.expect("cannot compare when no last_move"),
             cards,
@@ -103,10 +92,9 @@ impl Round {
         )
     }
 
-    fn contains_three_clubs(cards: Vec<PlayedCard>) -> bool {
+    fn contains_lowest_card(&self, cards: Vec<PlayedCard>) -> bool {
         for &card in cards.iter() {
-            if card.get_rank() == Rank::Three
-                && card.get_suit() == Suit::Clubs {
+            if card.get_rank() == self.rank_order[0] && card.get_suit() == self.suit_order[0] {
                 return true;
             }
         }
@@ -120,14 +108,10 @@ mod tests {
     use super::*;
     use crate::cards::*;
 
-    static DEFAULT_SUIT_ORDER: [Suit;4] = [
-        Suit::Clubs,
-        Suit::Hearts,
-        Suit::Diamonds,
-        Suit::Spades, 
-    ];
+    static DEFAULT_SUIT_ORDER: [Suit; 4] =
+        [Suit::Clubs, Suit::Hearts, Suit::Diamonds, Suit::Spades];
 
-    static DEFAULT_RANK_ORDER: [Rank;13] = [
+    static DEFAULT_RANK_ORDER: [Rank; 13] = [
         Rank::Three,
         Rank::Four,
         Rank::Five,
@@ -145,37 +129,34 @@ mod tests {
 
     #[test]
     fn when_game_hasnt_started_player_with_3clubs_starts() {
-        let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs}
-        ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let a_cards = vec![Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
 
         let players = vec![player_a, player_b];
 
-        let round = Round::new(
-            players,
-            None,
-            None,
-            DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER,
-        );
+        let round = Round::new(players, None, None, DEFAULT_SUIT_ORDER, DEFAULT_RANK_ORDER);
 
         assert_eq!(round.get_next_player(), Some("a"));
     }
 
-
     #[test]
     fn when_game_has_started_there_will_be_a_current_player() {
-        let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs}
-        ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let a_cards = vec![Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
@@ -192,104 +173,97 @@ mod tests {
 
     #[test]
     fn player_cannot_start_a_game_with_a_pass() {
-        let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs}
-        ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let a_cards = vec![Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let round = Round::new(
-            players,
-            None,
-            None,
-            DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER,
-        );
+        let round = Round::new(players, None, None, DEFAULT_SUIT_ORDER, DEFAULT_RANK_ORDER);
 
-        let err = round.submit_move("a", vec!()).err().unwrap();
+        let err = round.submit_move("a", vec![]).err().unwrap();
 
-        assert_eq!(
-            err,
-            SubmitError::FirstRoundPass
-        );
+        assert_eq!(err, SubmitError::FirstRoundPass);
     }
 
     #[test]
     fn player_must_start_a_game_with_three_clubs() {
         let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
         ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let round = Round::new(
-            players,
-            None,
-            None,
-            DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER,
-        );
-        let played_hand = vec!(
-            PlayedCard::new(Rank::Six, Suit::Clubs, false)
-        );
+        let round = Round::new(players, None, None, DEFAULT_SUIT_ORDER, DEFAULT_RANK_ORDER);
+        let played_hand = vec![PlayedCard::new(Rank::Six, Suit::Clubs, false)];
         let err = round.submit_move("a", played_hand).err().unwrap();
-        assert_eq!(
-            err,
-            SubmitError::FirstHandMustBeThreeClubs
-        );
+        assert_eq!(err, SubmitError::FirstHandMustBeThreeClubs);
     }
 
     #[test]
     fn playing_a_valid_hand_returns_the_new_round() {
         let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
         ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let round = Round::new(
-            players,
-            None,
-            None,
-            DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER,
-        );
-        let played_hand = vec!(
-            PlayedCard::new(Rank::Three, Suit::Clubs, false)
-        );
-        assert!(
-            round.submit_move("a", played_hand).is_ok()
-        );
+        let round = Round::new(players, None, None, DEFAULT_SUIT_ORDER, DEFAULT_RANK_ORDER);
+        let played_hand = vec![PlayedCard::new(Rank::Three, Suit::Clubs, false)];
+        assert!(round.submit_move("a", played_hand).is_ok());
     }
 
     #[test]
     fn lower_hand_cannot_beat_last_move() {
         let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
         ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let last_move = Some(
-            Hand::Single(
-                PlayedCard::new(Rank::Three, Suit::Clubs, false)
-            )
-        );
+        let last_move = Some(Hand::Single(PlayedCard::new(
+            Rank::Three,
+            Suit::Clubs,
+            false,
+        )));
         let round = Round::new(
             players,
             Some("a"),
@@ -297,35 +271,36 @@ mod tests {
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         );
-        let played_hand = vec!(
-            PlayedCard::new(Rank::Three, Suit::Clubs, false)
-        );
+        let played_hand = vec![PlayedCard::new(Rank::Three, Suit::Clubs, false)];
 
         let err = round.submit_move("a", played_hand).err().unwrap();
-        assert_eq!(
-            err,
-            SubmitError::HandNotHighEnough
-        );
-
+        assert_eq!(err, SubmitError::HandNotHighEnough);
     }
 
     #[test]
     fn higher_hand_can_beat_last_move() {
         let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
         ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let last_move = Some(
-            Hand::Single(
-                PlayedCard::new(Rank::Three, Suit::Clubs, false)
-            )
-        );
+        let last_move = Some(Hand::Single(PlayedCard::new(
+            Rank::Three,
+            Suit::Clubs,
+            false,
+        )));
         let round = Round::new(
             players,
             Some("a"),
@@ -333,32 +308,35 @@ mod tests {
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         );
-        let played_hand = vec!(
-            PlayedCard::new(Rank::Six, Suit::Clubs, false)
-        );
+        let played_hand = vec![PlayedCard::new(Rank::Six, Suit::Clubs, false)];
 
-        assert!(
-            round.submit_move("a", played_hand).is_ok()
-        );
+        assert!(round.submit_move("a", played_hand).is_ok());
     }
 
     #[test]
     fn invalid_player_cannot_make_a_move() {
         let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
         ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let last_move = Some(
-            Hand::Single(
-                PlayedCard::new(Rank::Three, Suit::Clubs, false)
-            )
-        );
+        let last_move = Some(Hand::Single(PlayedCard::new(
+            Rank::Three,
+            Suit::Clubs,
+            false,
+        )));
         let round = Round::new(
             players,
             Some("a"),
@@ -366,34 +344,36 @@ mod tests {
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         );
-        let played_hand = vec!(
-            PlayedCard::new(Rank::Six, Suit::Clubs, false)
-        );
-        
+        let played_hand = vec![PlayedCard::new(Rank::Six, Suit::Clubs, false)];
+
         let err = round.submit_move("b", played_hand).err().unwrap();
-        assert_eq!(
-            err,
-            SubmitError::NotCurrentPlayer
-        );
+        assert_eq!(err, SubmitError::NotCurrentPlayer);
     }
 
     #[test]
     fn it_should_be_a_valid_hand() {
         let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
         ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let last_move = Some(
-            Hand::Single(
-                PlayedCard::new(Rank::Three, Suit::Clubs, false)
-            )
-        );
+        let last_move = Some(Hand::Single(PlayedCard::new(
+            Rank::Three,
+            Suit::Clubs,
+            false,
+        )));
         let round = Round::new(
             players,
             Some("a"),
@@ -401,49 +381,42 @@ mod tests {
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         );
-        let played_hand = vec!(
+        let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
             PlayedCard::new(Rank::Three, Suit::Clubs, false),
-        );
-        
-        let err = round.submit_move("a", played_hand).err().unwrap();
-        assert_eq!(
-            err,
-            SubmitError::InvalidHand
-        );
+        ];
 
+        let err = round.submit_move("a", played_hand).err().unwrap();
+        assert_eq!(err, SubmitError::InvalidHand);
     }
 
     #[test]
     fn it_should_be_a_valid_hand_even_at_start() {
         let a_cards = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs}
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
         ];
-        let b_cards = vec![
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
-        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
         let player_a = Player::new("a".to_string(), a_cards);
         let player_b = Player::new("b".to_string(), b_cards);
         let players = vec![player_a, player_b];
-        let round = Round::new(
-            players,
-            None,
-            None,
-            DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER,
-        );
-        let played_hand = vec!(
+        let round = Round::new(players, None, None, DEFAULT_SUIT_ORDER, DEFAULT_RANK_ORDER);
+        let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
             PlayedCard::new(Rank::Three, Suit::Clubs, false),
-        );
-        
-        let err = round.submit_move("a", played_hand).err().unwrap();
-        assert_eq!(
-            err,
-            SubmitError::InvalidHand
-        );
+        ];
 
+        let err = round.submit_move("a", played_hand).err().unwrap();
+        assert_eq!(err, SubmitError::InvalidHand);
     }
 
     // todo:
@@ -451,4 +424,3 @@ mod tests {
     // - passing empties the table
     // - removing card from player on submit and updating next player
 }
-

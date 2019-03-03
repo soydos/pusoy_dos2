@@ -1,5 +1,11 @@
 use crate::cards::Card;
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
+
+#[derive(Debug, PartialEq, Serialize)]
+pub enum PlayerError {
+    PlayerDoesntHaveCard,
+}
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
@@ -25,6 +31,21 @@ impl Player {
 
     pub fn get_card_count(&self) -> usize {
         self.hand.len()
+    }
+
+    pub fn play_move(&mut self, cards: Vec<Card>) -> Result<Player, PlayerError> {
+        for card in cards.iter() {
+            match self.hand.iter().position(|&c| c == *card) {
+                Some(index) => self.hand.remove(index),
+                _ => return Err(PlayerError::PlayerDoesntHaveCard),
+            };
+        }
+
+        Ok(self.clone())
+    }
+
+    pub fn has_card(&self, card: &Card) -> bool {
+        self.hand.contains(card)
     }
 }
 
@@ -60,4 +81,112 @@ mod tests {
         assert_eq!(player.get_hand().len(), 13);
     }
 
+    #[test]
+    fn player_has_card() {
+        let id = String::from("id1");
+        let hand = vec![Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+
+        let three_clubs = Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        };
+        let four_clubs = Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        };
+
+        let player = Player::new(id, hand);
+
+        assert!(player.has_card(&three_clubs));
+        assert!(!player.has_card(&four_clubs));
+    }
+
+    #[test]
+    fn it_removes_played_cards_from_hand() {
+        let id = String::from("id1");
+        let hand = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        let played_hand = vec![Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+
+        let remaining_hand = vec![Card::Standard {
+            rank: Rank::Six,
+            suit: Suit::Clubs,
+        }];
+
+        let mut player = Player::new(id, hand);
+
+        assert!(player.play_move(played_hand).is_ok());
+        assert_eq!(player.get_hand(), remaining_hand);
+    }
+
+    #[test]
+    fn it_errors_if_player_tries_to_play_cards_they_dont_have() {
+        let id = String::from("id1");
+        let hand = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        let played_hand = vec![Card::Standard {
+            rank: Rank::Five,
+            suit: Suit::Clubs,
+        }];
+
+        let mut player = Player::new(id, hand);
+        let err = player.play_move(played_hand).err().unwrap();
+
+        assert_eq!(err, PlayerError::PlayerDoesntHaveCard);
+    }
+
+    #[test]
+    fn played_cards_returns_updated_player() {
+        let id = String::from("id1");
+        let hand = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        let played_hand = vec![Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+
+        let remaining_hand = vec![Card::Standard {
+            rank: Rank::Six,
+            suit: Suit::Clubs,
+        }];
+
+        let mut player = Player::new(id, hand);
+
+        let new_player = player.play_move(played_hand).unwrap();
+
+        assert_eq!(new_player.get_hand(), remaining_hand);
+    }
 }
