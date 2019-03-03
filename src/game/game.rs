@@ -84,6 +84,15 @@ impl Game {
     pub fn get_last_move(&self) -> Option<Hand> {
         self.round.get_last_move()
     }
+
+    pub fn get_ai_move(&self) -> Option<Hand> {
+        // todo - use the following to come up
+        // with a simple strategy for picking a move
+        // self.round.get_last_move()
+        // self.round.get_next_player()
+        // self.get_player(id)
+        None
+    }
 }
 
 #[cfg(test)]
