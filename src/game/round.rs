@@ -627,7 +627,7 @@ mod tests {
     }
 
     // todo:
-    // - remove card from player on submit 
     // - update next player
+    // - update last_move
     // - passing empties the table
 }
