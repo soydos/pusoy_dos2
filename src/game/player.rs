@@ -43,6 +43,10 @@ impl Player {
 
         Ok(self.clone())
     }
+
+    pub fn has_card(&self, card: &Card) -> bool {
+        self.hand.contains(card)
+    }
 }
 
 #[cfg(test)]
@@ -75,6 +79,25 @@ mod tests {
         let dealt = deck.deal(4);
         let player = Player::new(id, dealt[0].to_owned());
         assert_eq!(player.get_hand().len(), 13);
+    }
+
+    #[test]
+    fn player_has_card() {
+        let id = String::from("id1");
+        let hand = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        let three_clubs = Card::Standard { rank: Rank::Three, suit: Suit::Clubs };
+        let four_clubs = Card::Standard { rank: Rank::Four, suit: Suit::Clubs };
+
+        let player = Player::new(id, hand);
+
+        assert!(player.has_card(&three_clubs));
+        assert!(!player.has_card(&four_clubs));
     }
 
     #[test]
