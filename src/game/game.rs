@@ -62,6 +62,8 @@ impl Game {
                         p.clone()
                     }
                 }).collect();
+
+                self.round = new_round;
                 Ok(())
             },
             Err(x) => Err(x),
@@ -75,7 +77,7 @@ impl Game {
         }
     }
 
-    pub fn get_next_player(&self) -> Option<&str> {
+    pub fn get_next_player(&self) -> Option<String> {
         self.round.get_next_player()
     }
 
@@ -121,11 +123,11 @@ mod tests {
 
     #[test]
     fn player_loses_cards_that_it_plays() {
-        let ids = [String::from("a"), String::from("b")];
+        let ids = ["a".to_string(), "b".to_string()];
         let mut game = Game::new(1, 0, &ids, false);
 
         let next_player = game.get_next_player()
-            .unwrap().to_owned();
+            .expect("unable to get next player").to_owned();
         let hand = vec![
             PlayedCard::new(
                 Rank::Three,
@@ -135,12 +137,14 @@ mod tests {
         ];
 
         let initial_hand_size = game.get_player(&next_player)
-            .unwrap().get_hand().len();
+            .expect("unable to get player before move")
+            .get_hand().len();
 
         let _ = game.play_move(&next_player, hand);
 
         let eventual_hand_size = game.get_player(&next_player)
-            .unwrap().get_hand().len();
+            .expect("unable to get player after move")
+            .get_hand().len();
 
         assert_eq!(initial_hand_size - 1, eventual_hand_size);
     }
