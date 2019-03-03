@@ -43,11 +43,11 @@ impl Hand {
 
     pub fn to_cards(&self) -> Vec<PlayedCard> {
         match *self {
-            Hand::Pass => vec!(),
-            Hand::Single(c) => vec!(c),
-            Hand::Pair(c, d) => vec!(c, d),
-            Hand::Prial(c, d, e) => vec!(c, d, e),
-            Hand::FiveCardTrick(trick) => trick.cards.to_vec()
+            Hand::Pass => vec![],
+            Hand::Single(c) => vec![c],
+            Hand::Pair(c, d) => vec![c, d],
+            Hand::Prial(c, d, e) => vec![c, d, e],
+            Hand::FiveCardTrick(trick) => trick.cards.to_vec(),
         }
     }
 

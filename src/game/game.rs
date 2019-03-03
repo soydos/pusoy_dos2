@@ -1,14 +1,10 @@
 use super::{Player, Round, SubmitError};
-use crate::cards::{
-    Deck,
-    PlayedCard,
-    get_suit_array,
-    get_rank_array
-};
+use crate::cards::{get_rank_array, get_suit_array, Deck, PlayedCard};
 use wasm_bindgen::prelude::*;
 
 // todo - suit order is a property of game
 #[wasm_bindgen]
+#[derive(Debug)]
 pub struct Game {
     _num_decks: u8,
     _num_jokers: u8,
@@ -28,7 +24,7 @@ impl Game {
         deck.shuffle();
         let cards = deck.deal(player_ids.len() as u8);
 
-        let players:Vec<Player> = cards
+        let players: Vec<Player> = cards
             .iter()
             .zip(player_ids)
             .map(|(c, id)| Player::new(id.to_string(), c.clone()))
@@ -47,14 +43,18 @@ impl Game {
             _num_jokers,
             players,
             _reversals_enabled,
-            round
+            round,
         }
     }
 
-    pub fn play_move(&self, player_id: &str, player_move: Vec<PlayedCard>) -> Result<(), SubmitError> {
+    pub fn play_move(
+        &self,
+        player_id: &str,
+        player_move: Vec<PlayedCard>,
+    ) -> Result<(), SubmitError> {
         match self.round.submit_move(player_id, player_move) {
             Ok(_) => Ok(()),
-            Err(x)   => Err(x)
+            Err(x) => Err(x),
         }
     }
 
@@ -87,37 +87,21 @@ mod tests {
 
     #[test]
     fn when_game_hasnt_started_player_with_3clubs_starts() {
-        let ids = [
-            String::from("a"),
-            String::from("b"),
-        ];
+        let ids = [String::from("a"), String::from("b")];
         let game = Game::new(1, 0, &ids, false);
 
         let player_a = game.get_player("a").unwrap();
-        let player_b = game.get_player("b").unwrap();
-
-        let a_hand = player_a.get_hand();
-        let b_hand = player_b.get_hand();
 
         let next_player = game.get_next_player().unwrap();
-        let three_clubs = Card::Standard{
+        let three_clubs = Card::Standard {
             rank: Rank::Three,
             suit: Suit::Clubs,
         };
 
-        for &card in a_hand.iter() {
-            if card == three_clubs {
-                assert_eq!(next_player, "a");
-                return;
-            } 
+        if player_a.has_card(&three_clubs) {
+            assert_eq!(next_player, "a");
+        } else {
+            assert_eq!(next_player, "b");
         }
-
-        for &card in b_hand.iter() {
-            if card == three_clubs {
-                assert_eq!(next_player, "b");
-            } 
-        }
-
     }
-
 }

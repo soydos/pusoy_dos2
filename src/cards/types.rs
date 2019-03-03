@@ -52,8 +52,6 @@ pub fn get_suit_array() -> [Suit; 4] {
 
 pub fn get_rank_array() -> [Rank; 13] {
     [
-        Rank::Ace,
-        Rank::Two,
         Rank::Three,
         Rank::Four,
         Rank::Five,
@@ -65,6 +63,8 @@ pub fn get_rank_array() -> [Rank; 13] {
         Rank::Jack,
         Rank::Queen,
         Rank::King,
+        Rank::Ace,
+        Rank::Two,
     ]
 }
 

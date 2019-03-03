@@ -84,15 +84,19 @@ mod tests {
     #[test]
     fn player_has_card() {
         let id = String::from("id1");
-        let hand = vec![
-            Card::Standard {
-                rank: Rank::Three,
-                suit: Suit::Clubs,
-            },
-        ];
+        let hand = vec![Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
 
-        let three_clubs = Card::Standard { rank: Rank::Three, suit: Suit::Clubs };
-        let four_clubs = Card::Standard { rank: Rank::Four, suit: Suit::Clubs };
+        let three_clubs = Card::Standard {
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        };
+        let four_clubs = Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        };
 
         let player = Player::new(id, hand);
 

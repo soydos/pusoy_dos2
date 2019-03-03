@@ -89,4 +89,18 @@ mod tests {
         assert_eq!(joker_ace_of_spades.get_suit(), Suit::Spades);
     }
 
+    #[test]
+    fn played_card_to_card() {
+        let ace_of_spades = Card::Standard {
+            rank: Rank::Ace,
+            suit: Suit::Spades,
+        };
+        let joker = Card::Joker;
+
+        let played_ace_of_spades = PlayedCard::new(Rank::Ace, Suit::Spades, false);
+        let played_joker = PlayedCard::new(Rank::Ace, Suit::Spades, true);
+
+        assert_eq!(played_ace_of_spades.to_card(), ace_of_spades);
+        assert_eq!(played_joker.to_card(), joker);
+    }
 }

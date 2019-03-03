@@ -57,7 +57,7 @@ impl Round {
         if self.last_move == None {
             if cards.len() == 0 {
                 return Err(SubmitError::FirstRoundPass);
-            } else if !Self::contains_three_clubs(cards) {
+            } else if !self.contains_lowest_card(cards) {
                 return Err(SubmitError::FirstHandMustBeThreeClubs);
             }
         } else {
@@ -92,9 +92,9 @@ impl Round {
         )
     }
 
-    fn contains_three_clubs(cards: Vec<PlayedCard>) -> bool {
+    fn contains_lowest_card(&self, cards: Vec<PlayedCard>) -> bool {
         for &card in cards.iter() {
-            if card.get_rank() == Rank::Three && card.get_suit() == Suit::Clubs {
+            if card.get_rank() == self.rank_order[0] && card.get_suit() == self.suit_order[0] {
                 return true;
             }
         }
