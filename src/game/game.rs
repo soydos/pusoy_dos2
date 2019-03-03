@@ -1,4 +1,4 @@
-use super::{Player, Round, SubmitError};
+use super::{Player, Round, SubmitError, Hand};
 use crate::cards::{get_rank_array, get_suit_array, Deck, PlayedCard};
 use wasm_bindgen::prelude::*;
 
@@ -77,6 +77,10 @@ impl Game {
 
     pub fn get_next_player(&self) -> Option<&str> {
         self.round.get_next_player()
+    }
+
+    pub fn get_last_move(&self) -> Option<Hand> {
+        self.round.get_last_move()
     }
 }
 
