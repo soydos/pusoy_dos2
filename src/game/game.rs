@@ -34,6 +34,7 @@ impl Game {
             players.clone(),
             None,
             None,
+            None,
             get_suit_array(), // todo - set when game is setup
             get_rank_array(),
         );
@@ -157,5 +158,4 @@ mod tests {
 
         assert_eq!(initial_hand_size - 1, eventual_hand_size);
     }
-
 }
