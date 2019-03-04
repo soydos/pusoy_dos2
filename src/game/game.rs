@@ -1,5 +1,10 @@
 use super::{Player, Round, SubmitError, Hand};
-use crate::cards::{get_rank_array, get_suit_array, Deck, PlayedCard};
+use crate::cards::{
+    get_rank_array,
+    get_suit_array,
+    Deck,
+    PlayedCard
+};
 use wasm_bindgen::prelude::*;
 
 // todo - suit order is a property of game
@@ -86,13 +91,13 @@ impl Game {
         self.round.get_last_move()
     }
 
-    pub fn get_ai_move(&self) -> Option<Hand> {
+    pub fn get_ai_move(&self) -> Option<Vec<PlayedCard>> {
         // todo - use the following to come up
         // with a simple strategy for picking a move
         // self.round.get_last_move()
         // self.round.get_next_player()
         // self.get_player(id)
-        None
+        Some(vec!())
     }
 }
 
