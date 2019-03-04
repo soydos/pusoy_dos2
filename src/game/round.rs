@@ -71,7 +71,8 @@ impl Round {
                     SubmitError::FirstHandMustContainLowestCard
                 );
             }
-        } else if hand != Some(Hand::Pass) {
+        } else if self.last_move != Some(Hand::Pass)
+            && hand != Some(Hand::Pass) {
             if !self.hand_beats_last_move(hand.unwrap()) {
                 return Err(SubmitError::HandNotHighEnough);
             }
@@ -1071,6 +1072,46 @@ mod tests {
 
     }
 
-    // todo:
-    // - passing empties the table
+    #[test]
+    fn any_card_beats_a_pass() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![Card::Standard {
+            rank: Rank::Four,
+            suit: Suit::Clubs,
+        }];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+
+        let players = vec![player_a, player_b];
+
+        let round = Round::new(
+            players,
+            Some("a".to_string()),
+            Some(Hand::Pass),
+            Some("a".to_string()),
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER
+        );
+
+        let played_hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            ),
+        ];
+
+        let new_round = round.submit_move("a", played_hand);
+
+        assert!(new_round.is_ok());
+    }
 }
