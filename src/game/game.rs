@@ -1,5 +1,10 @@
-use super::{Player, Round, SubmitError};
-use crate::cards::{get_rank_array, get_suit_array, Deck, PlayedCard};
+use super::{Player, Round, SubmitError, Hand};
+use crate::cards::{
+    get_rank_array,
+    get_suit_array,
+    Deck,
+    PlayedCard
+};
 use wasm_bindgen::prelude::*;
 
 // todo - suit order is a property of game
@@ -34,6 +39,7 @@ impl Game {
             players.clone(),
             None,
             None,
+            None,
             get_suit_array(), // todo - set when game is setup
             get_rank_array(),
         );
@@ -62,6 +68,8 @@ impl Game {
                         p.clone()
                     }
                 }).collect();
+
+                self.round = new_round;
                 Ok(())
             },
             Err(x) => Err(x),
@@ -75,8 +83,21 @@ impl Game {
         }
     }
 
-    pub fn get_next_player(&self) -> Option<&str> {
+    pub fn get_next_player(&self) -> Option<String> {
         self.round.get_next_player()
+    }
+
+    pub fn get_last_move(&self) -> Option<Hand> {
+        self.round.get_last_move()
+    }
+
+    pub fn get_ai_move(&self) -> Option<Vec<PlayedCard>> {
+        // todo - use the following to come up
+        // with a simple strategy for picking a move
+        // self.round.get_last_move()
+        // self.round.get_next_player()
+        // self.get_player(id)
+        Some(vec!())
     }
 }
 
@@ -117,11 +138,11 @@ mod tests {
 
     #[test]
     fn player_loses_cards_that_it_plays() {
-        let ids = [String::from("a"), String::from("b")];
+        let ids = ["a".to_string(), "b".to_string()];
         let mut game = Game::new(1, 0, &ids, false);
 
         let next_player = game.get_next_player()
-            .unwrap().to_owned();
+            .expect("unable to get next player").to_owned();
         let hand = vec![
             PlayedCard::new(
                 Rank::Three,
@@ -131,14 +152,15 @@ mod tests {
         ];
 
         let initial_hand_size = game.get_player(&next_player)
-            .unwrap().get_hand().len();
+            .expect("unable to get player before move")
+            .get_hand().len();
 
         let _ = game.play_move(&next_player, hand);
 
         let eventual_hand_size = game.get_player(&next_player)
-            .unwrap().get_hand().len();
+            .expect("unable to get player after move")
+            .get_hand().len();
 
         assert_eq!(initial_hand_size - 1, eventual_hand_size);
     }
-
 }
