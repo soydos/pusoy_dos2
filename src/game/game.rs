@@ -5,6 +5,7 @@ use crate::cards::{
     Deck,
     PlayedCard
 };
+use crate::ai::get_move;
 use wasm_bindgen::prelude::*;
 
 // todo - suit order is a property of game
@@ -13,7 +14,6 @@ use wasm_bindgen::prelude::*;
 pub struct Game {
     num_decks: u8,
     num_jokers: u8,
-    players: Vec<Player>,
     _reversals_enabled: bool,
     round: Round,
 }
@@ -47,7 +47,6 @@ impl Game {
         Game {
             num_decks,
             num_jokers,
-            players,
             _reversals_enabled,
             round,
         }
@@ -60,15 +59,6 @@ impl Game {
     ) -> Result<(), SubmitError> {
         match self.round.submit_move(player_id, player_move) {
             Ok(new_round) => {
-                self.players = self.players.iter().map(|p| {
-                    if p.get_id() == player_id {
-                        new_round.get_player(player_id)
-                            .unwrap_or(p.clone())
-                    } else {
-                        p.clone()
-                    }
-                }).collect();
-
                 self.round = new_round;
                 Ok(())
             },
@@ -77,10 +67,7 @@ impl Game {
     }
 
     pub fn get_player(&self, id: &str) -> Option<Player> {
-        match self.players.iter().find(|&p| p.get_id() == id) {
-            Some(p) => Some(p.clone()),
-            _ => None,
-        }
+        self.round.get_player(id)
     }
 
     pub fn get_next_player(&self) -> Option<String> {
@@ -97,7 +84,15 @@ impl Game {
         // self.round.get_last_move()
         // self.round.get_next_player()
         // self.get_player(id)
-        Some(vec!())
+        let player_id = self.get_next_player()
+            .expect("no next player!");
+        get_move(
+            self.get_last_move(),
+            self.get_player(&player_id),
+            self.round.get_suit_order(),
+            self.round.get_rank_order(),
+        )
+            
     }
 }
 

@@ -144,6 +144,14 @@ impl Round {
         }
     }
 
+    pub fn get_suit_order(&self) -> [Suit; 4] {
+        self.suit_order
+    }
+
+    pub fn get_rank_order(&self) -> [Rank; 13] {
+        self.rank_order
+    }
+
     fn get_starting_player(&self) -> Option<String> {
         let lowest_card = Card::Standard {
             suit: self.suit_order[0],
