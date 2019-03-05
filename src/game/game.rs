@@ -88,7 +88,9 @@ impl Game {
             .expect("no next player!");
         get_move(
             self.get_last_move(),
-            self.get_player(&player_id)
+            self.get_player(&player_id),
+            self.round.get_suit_order(),
+            self.round.get_rank_order(),
         )
             
     }
