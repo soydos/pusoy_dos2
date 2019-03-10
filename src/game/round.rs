@@ -43,7 +43,13 @@ impl Round {
 
     pub fn get_next_player(&self) -> Option<String> {
         match &self.next_player {
-            None => self.get_starting_player(),
+            None => {
+                if self.get_players_still_in(&self.players).len() > 1 {
+                    self.get_starting_player()
+                } else {
+                    None
+                }
+            },
             Some(x) => Some(x.to_string()),
         }
     }
@@ -112,9 +118,16 @@ impl Round {
             new_last_move = Some(Hand::Pass)
         }
 
+        let output_next_player = if self.get_players_still_in(&players)
+            .len() > 1 {
+            Some(next_player)
+        } else {
+            None
+        };
+
         Ok(Self::new(
             players,
-            Some(next_player),
+            output_next_player,
             new_last_move,
             new_last_player,
             self.suit_order,
@@ -186,9 +199,7 @@ impl Round {
     }
 
     fn rotate_player(&self) -> String {
-        let players_still_in:Vec<&Player> = self.players.iter()
-            .filter(|p| p.get_hand().len() > 0)
-            .collect();
+        let players_still_in = self.get_players_still_in(&self.players);
         if players_still_in.last()
             .unwrap().get_id() == self.get_next_player()
             .unwrap() {
@@ -206,6 +217,13 @@ impl Round {
         }
 
         players_still_in.get(index).unwrap().get_id().to_string()
+    }
+
+    fn get_players_still_in(&self, players: &Vec<Player>) -> Vec<Player> {
+        players.iter()
+            .filter(|p| p.get_hand().len() > 0)
+            .map(|p| p.clone())
+            .collect()
     }
 }
 
@@ -1182,6 +1200,76 @@ mod tests {
         assert_eq!(
             new_round.get_next_player().unwrap(),
             "c".to_string()
+        );
+    }
+
+    #[test]
+    fn once_the_game_is_over_the_next_player_is_none() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Spades,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![];
+        let c_cards = vec![Card::Standard{
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+
+        let last_move = Some(
+            Hand::Pair(
+                PlayedCard::new(
+                    Rank::Three,
+                    Suit::Clubs,
+                    false,
+                ),
+                PlayedCard::new(
+                    Rank::Three,
+                    Suit::Clubs,
+                    false,
+                )
+            )
+        );
+
+        let round = Round::new(
+            players,
+            Some("a".to_string()),
+            last_move,
+            Some("c".to_string()),
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER
+        );
+
+        let played_hand = vec![
+            PlayedCard::new(
+                Rank::Four,
+                Suit::Spades,
+                false,
+            ),
+            PlayedCard::new(
+                Rank::Four,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let new_round = round.submit_move(
+            "a",
+            played_hand
+        ).unwrap();
+
+        assert!(
+            new_round.get_next_player().is_none(),
         );
 
     }
