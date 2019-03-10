@@ -16,6 +16,7 @@ pub struct Game {
     num_jokers: u8,
     _reversals_enabled: bool,
     round: Round,
+    winners: Vec<String>,
 }
 
 impl Game {
@@ -49,6 +50,7 @@ impl Game {
             num_jokers,
             _reversals_enabled,
             round,
+            winners: vec!()
         }
     }
 
@@ -59,6 +61,13 @@ impl Game {
     ) -> Result<(), SubmitError> {
         match self.round.submit_move(player_id, player_move) {
             Ok(new_round) => {
+                let player = new_round.get_player(player_id)
+                    .unwrap();
+                if player.get_hand().len() == 0
+                    && !self.winners
+                            .contains(&player_id.to_string()) {
+                    self.winners.push(player_id.to_string());
+                }
                 self.round = new_round;
                 Ok(())
             },
@@ -79,11 +88,6 @@ impl Game {
     }
 
     pub fn get_ai_move(&self) -> Option<Vec<PlayedCard>> {
-        // todo - use the following to come up
-        // with a simple strategy for picking a move
-        // self.round.get_last_move()
-        // self.round.get_next_player()
-        // self.get_player(id)
         let player_id = self.get_next_player()
             .expect("no next player!");
         get_move(
@@ -93,6 +97,10 @@ impl Game {
             self.round.get_rank_order(),
         )
             
+    }
+
+    pub fn get_winners(&self) -> Vec<String> {
+        self.winners.clone()
     }
 }
 
@@ -116,19 +124,14 @@ mod tests {
         let ids = [String::from("a"), String::from("b")];
         let game = Game::new(1, 0, &ids, false);
 
-        let player_a = game.get_player("a").unwrap();
-
         let next_player = game.get_next_player().unwrap();
         let three_clubs = Card::Standard {
             rank: Rank::Three,
             suit: Suit::Clubs,
         };
 
-        if player_a.has_card(&three_clubs) {
-            assert_eq!(next_player, "a");
-        } else {
-            assert_eq!(next_player, "b");
-        }
+        assert!(game.get_player(&next_player).unwrap()
+            .has_card(&three_clubs));
     }
 
     #[test]
@@ -157,5 +160,225 @@ mod tests {
             .get_hand().len();
 
         assert_eq!(initial_hand_size - 1, eventual_hand_size);
+    }
+
+    #[test]
+    fn game_returns_winners() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+
+        let players = vec![player_a, player_b];
+        let round = Round::new(
+            players,
+            Some("b".to_string()),
+            Some(Hand::Pass),
+            Some("a".to_string()),
+            get_suit_array(),
+            get_rank_array(),
+        );
+
+        let mut game = Game{
+            num_decks: 1,
+            num_jokers: 1,
+            _reversals_enabled: false,
+            round,
+            winners: vec!(),
+        };
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let _ = game.play_move("b", hand);
+
+        assert_eq!(
+            game.get_winners().first().expect("no winners!"),
+            "b"
+        );
+    }
+
+    #[test]
+    fn player_only_wins_when_it_is_out_of_cards() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+
+        let players = vec![player_a, player_b];
+        let round = Round::new(
+            players,
+            Some("b".to_string()),
+            Some(Hand::Pass),
+            Some("a".to_string()),
+            get_suit_array(),
+            get_rank_array(),
+        );
+
+        let mut game = Game{
+            num_decks: 1,
+            num_jokers: 1,
+            _reversals_enabled: false,
+            round,
+            winners: vec!(),
+        };
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let _ = game.play_move("b", hand);
+
+        assert!(game.get_winners().first().is_none());
+    }
+
+    #[test]
+    fn player_ids_only_appear_in_the_winners_list_once() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![];
+
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let round = Round::new(
+            players,
+            Some("c".to_string()),
+            Some(Hand::Pass),
+            Some("a".to_string()),
+            get_suit_array(),
+            get_rank_array(),
+        );
+
+        let mut game = Game{
+            num_decks: 1,
+            num_jokers: 1,
+            _reversals_enabled: false,
+            round,
+            winners: vec!["c".to_string()],
+        };
+
+        let hand = vec![];
+
+        let _ = game.play_move("c", hand);
+
+        assert_eq!(game.get_winners().len(), 1);
+    }
+
+    #[test]
+    fn winners_list_contains_order_of_winners() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![];
+
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let round = Round::new(
+            players,
+            Some("b".to_string()),
+            Some(Hand::Pass),
+            Some("a".to_string()),
+            get_suit_array(),
+            get_rank_array(),
+        );
+
+        let mut game = Game{
+            num_decks: 1,
+            num_jokers: 1,
+            _reversals_enabled: false,
+            round,
+            winners: vec!["c".to_string()],
+        };
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let _ = game.play_move("b", hand);
+
+        assert_eq!(
+            game.get_winners().get(1).unwrap(),
+            "b"
+        );
     }
 }
