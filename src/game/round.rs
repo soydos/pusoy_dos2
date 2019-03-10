@@ -116,19 +116,19 @@ impl Round {
 
         if next_player == new_last_player.clone()
             .unwrap_or("invalid_player".to_string()) {
-            new_last_move = Some(Hand::Pass)
+            new_last_move = Some(Hand::Pass);
         }
 
-        while(self.get_player(&next_player)
-            .unwrap().get_hand().len() < 1) {
+        while self.get_player(&next_player)
+            .unwrap().get_hand().len() < 1 {
 
             if next_player == new_last_player.clone()
                 .unwrap_or("invalid_player".to_string()) {
-                new_last_move = Some(Hand::Pass)
+                new_last_move = Some(Hand::Pass);
             }
 
 
-            next_player = self.get_next_player_in_rotation(user_id);
+            next_player = self.get_next_player_in_rotation(&next_player);
         }
 
         let output_next_player = if self.get_players_still_in(&players)
