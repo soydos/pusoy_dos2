@@ -127,7 +127,6 @@ impl Round {
                 new_last_move = Some(Hand::Pass);
             }
 
-
             next_player = self.get_next_player_in_rotation(&next_player);
         }
 
