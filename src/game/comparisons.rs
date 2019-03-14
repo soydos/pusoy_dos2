@@ -22,6 +22,19 @@ pub fn compare_hands(
     }
 }
 
+pub fn sort_played_cards(
+    hand: &Vec<PlayedCard>,
+    suit_order: [Suit; 4],
+    rank_order: [Rank; 13]
+) -> Vec<PlayedCard> {
+
+    let mut sortable_cards = hand.clone();
+    sortable_cards.sort_by(
+        |&a, &b| compare_single(a, b, suit_order, rank_order)
+    );
+    sortable_cards
+}
+
 fn compare_single(
     last_card: PlayedCard,
     new_card: PlayedCard,
@@ -644,4 +657,37 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn it_sorts_hands_by_the_default_suit_and_rank() {
+        let hand = vec![
+            PlayedCard::new(Rank::Two, Suit::Spades, false),
+            PlayedCard::new(Rank::Five, Suit::Spades, false),
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+            PlayedCard::new(Rank::Two, Suit::Diamonds, false),
+            PlayedCard::new(Rank::Seven, Suit::Clubs, false),
+            PlayedCard::new(Rank::Five, Suit::Clubs, false),
+            PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+            PlayedCard::new(Rank::Nine, Suit::Clubs, false),
+        ];
+
+        let sorted_hand = sort_played_cards(
+            &hand,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+        );
+
+        assert_eq!(
+            sorted_hand,
+            vec![
+                PlayedCard::new(Rank::Two, Suit::Spades, false),
+                PlayedCard::new(Rank::Two, Suit::Diamonds, false),
+                PlayedCard::new(Rank::Nine, Suit::Clubs, false),
+                PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+                PlayedCard::new(Rank::Seven, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Five, Suit::Spades, false),
+                PlayedCard::new(Rank::Five, Suit::Clubs, false),
+            ]
+        );
+    }
 }
