@@ -108,10 +108,11 @@ fn get_top_card(
     suit_order: [Suit; 4],
     rank_order: [Rank; 13],
 ) -> PlayedCard {
-    let mut sortable_cards = cards.clone();
-    sortable_cards.sort_by(|&a, &b| compare_single(a, b, suit_order, rank_order));
-
-    sortable_cards[0]
+    *sort_played_cards(
+        &cards,
+        suit_order,
+        rank_order
+    ).first().expect("no cards found")
 }
 
 fn get_top_of_n(
@@ -121,7 +122,7 @@ fn get_top_of_n(
     rank_order: [Rank; 13],
 ) -> PlayedCard {
     let counts = Hand::get_counts(cards.clone());
-    let mut top_rank = rank_order[0];
+    let mut top_rank = *rank_order.first().unwrap();
 
     for (rank, count) in &counts {
         if *count == n {
