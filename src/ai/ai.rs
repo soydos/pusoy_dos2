@@ -19,9 +19,7 @@ pub fn get_move(
 
     let move_hand = last_move.unwrap();
     match move_hand {
-        Hand::Pass => {
-            Some(get_lowest_natural_card(&player_hand))
-        },
+        Hand::Pass => Some(get_lowest_natural_card(&player_hand)),
         Hand::Single(_) => {
             let played_single = 
                 get_lowest_natural_card_against_played(
@@ -51,47 +49,69 @@ pub fn get_move(
 
             get_pass()
         },
-        Hand::Pair(_, _) => {
-            let counts = get_counts(player_hand.clone());
-            let mut rank_option = None;
-            for (r, count) in &counts {
-                if *count == 2 {
-                    rank_option = Some(*r);
-                }
-            }
-
-            if rank_option == None {
-                return Some(vec!());
-            }
-
-            let rank = rank_option.unwrap();
-            let mut hand = vec!();
-            for card in get_natural_cards(&player_hand) {
-                if card.get_rank().unwrap() == rank {
-                    hand.push(
-                        PlayedCard::new(
-                            rank,
-                            card.get_suit().unwrap(),
-                            false
-                        )
-                    );
-                }
-            }
-
-            let built_hand = Hand::build(hand.clone()).unwrap();
-            if compare_hands(
+        Hand::Pair(_, _) | Hand::Prial(_, _, _) => {
+            let hand = get_multiple_card_hand(
+                move_hand.to_cards().len(),
+                player_hand,
                 move_hand,
-                built_hand,
                 suit_order,
-                rank_order) {
-                return Some(hand.clone());
+                rank_order,
+            );
+
+            if hand.is_none() {
+                get_pass()
+            } else {
+                hand
             }
 
-            get_pass()
         },
         _ => get_pass()
     }
     
+}
+
+fn get_multiple_card_hand(
+    n: usize,
+    player_hand: Vec<Card>,
+    move_hand: Hand,
+    suit_order: [Suit; 4],
+    rank_order: [Rank; 13], 
+) -> Option<Vec<PlayedCard>> {
+    let counts = get_counts(player_hand.clone());
+    let mut rank_options = vec!();
+    for (r, count) in &counts {
+        if *count == n {
+            rank_options.push(*r);
+        }
+    }
+
+    rank_options.sort();
+
+    for &rank in &rank_options {
+        let mut hand = vec!();
+        for card in get_natural_cards(&player_hand) {
+            if card.get_rank().unwrap() == rank {
+                hand.push(
+                    PlayedCard::new(
+                        rank,
+                        card.get_suit().unwrap(),
+                        false
+                    )
+                );
+            }
+        }
+
+        let built_hand = Hand::build(hand.clone()).unwrap();
+        if compare_hands(
+            move_hand,
+            built_hand,
+            suit_order,
+            rank_order) {
+            return Some(hand.clone());
+        }
+    }
+
+    None
 }
 
 fn get_counts(cards: Vec<Card>) -> HashMap<Rank, usize> {
@@ -445,6 +465,107 @@ mod tests {
                 ),
             ))
         );
+    }
+
+    #[test]
+    fn ai_plays_a_prial_where_it_can() {
+         let previous_move = Some(Hand::Prial(
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+        ));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(
+                    Rank::Six, Suit::Clubs, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Clubs, false
+                ),
+
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+            ))
+        );
+    }
+
+    #[test]
+    fn ai_passes_on_prial_when_it_cant_play_beat_the_prial() {
+         let previous_move = Some(Hand::Prial(
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+        ));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Four, suit: Suit::Spades},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!())
+        );
+    }
+
+    #[test]
+    fn ai_plays_the_lowest_prial_it_can() {
+         let previous_move = Some(Hand::Prial(
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+            PlayedCard::new(Rank::Six, Suit::Clubs, false),
+        ));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(
+                    Rank::Six, Suit::Clubs, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Clubs, false
+                ),
+
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+            ))
+        );
 
     }
+
 }
