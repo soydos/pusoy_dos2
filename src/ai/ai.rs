@@ -19,7 +19,17 @@ pub fn get_move(
 
     let move_hand = last_move.unwrap();
     match move_hand {
-        Hand::Pass => Some(get_lowest_natural_card(&player_hand)),
+        Hand::Pass => {
+            if player_hand.len() == 1 {
+                return Some(convert_to_played(
+                    &player_hand.clone(),
+                    suit_order,
+                    rank_order
+                ));
+            }
+
+            Some(get_lowest_natural_card(&player_hand))
+        },
         Hand::Single(_) => {
             let played_single = 
                 get_lowest_natural_card_against_played(
@@ -273,7 +283,27 @@ fn get_jokers(hand: &Vec<Card>) -> Vec<Card>{
         c.get_rank() == None
     })
     .map(|&c| c.clone()).collect::<Vec<Card>>()
+}
 
+fn convert_to_played(
+    hand: &Vec<Card>,
+    suit_order: [Suit; 4],
+    rank_order: [Rank; 13]
+) -> Vec<PlayedCard> {
+    hand.iter().map(|&c| {
+        match c {
+            Card::Standard{
+                rank, suit
+            } => {
+                PlayedCard::new(rank, suit, false)
+            },
+            Card::Joker => PlayedCard::new(
+                rank_order[0],
+                suit_order[0],
+                true
+            )
+        }
+    }).collect::<Vec<PlayedCard>>()
 }
 
 #[cfg(test)]
@@ -765,5 +795,26 @@ mod tests {
 
     }
 
+    #[test]
+    fn if_ai_has_a_joker_left_on_an_empty_table_it_will_play() {
+        let previous_move = Some(Hand::Pass);
+        let hand = vec!(
+            Card::Joker
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, true)
+            ))
+        );
+
+    }
 
 }
