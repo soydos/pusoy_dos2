@@ -1,4 +1,4 @@
-use crate::game::{Hand, Player, compare_hands};
+use crate::game::{Hand, Player, compare_hands, Trick, TrickType};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use std::collections::HashMap;
 
@@ -65,7 +65,36 @@ pub fn get_move(
             }
 
         },
-        _ => get_pass()
+        Hand::FiveCardTrick(_) => {
+            match move_hand {
+                Hand::FiveCardTrick(
+                    Trick{
+                        trick_type: TrickType::Flush,
+                        cards: _
+                    }
+                ) => {
+                    Some(vec!(
+                        PlayedCard::new(
+                            Rank::Six, Suit::Clubs, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Six, Suit::Clubs, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Six, Suit::Spades, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Seven, Suit::Clubs, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Seven, Suit::Clubs, false
+                        ),
+                    ))
+
+                },
+                _ => get_pass()
+            }
+        },
     }
     
 }
@@ -218,6 +247,7 @@ fn get_jokers(hand: &Vec<Card>) -> Vec<Card>{
 mod tests {
     use super::*;
     use crate::cards::*;
+    use crate::game::{TrickType, Trick};
 
     static DEFAULT_SUIT_ORDER: [Suit; 4] =
         [Suit::Clubs, Suit::Hearts, Suit::Diamonds, Suit::Spades];
@@ -567,5 +597,89 @@ mod tests {
         );
 
     }
+
+    #[test]
+    fn ai_can_play_flush() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Flush,
+            cards: [
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(
+                    Rank::Six, Suit::Clubs, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Clubs, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Clubs, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Clubs, false
+                ),
+            ))
+        );
+    }
+
+    #[test]
+    fn ai_can_pass_on_fct() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Flush,
+            cards: [
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!())
+        );
+
+    }
+
 
 }
