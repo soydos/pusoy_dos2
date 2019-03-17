@@ -80,7 +80,7 @@ pub fn get_move(
                     let mut flush_suit = None;
 
                     for (r, count) in &counts {
-                        if *count == 5 {
+                        if *count >= 5 {
                             flush_suit = Some(*r);
                         }
                     }
@@ -91,7 +91,8 @@ pub fn get_move(
 
                     let mut hand = vec!();
                     for card in get_natural_cards(&player_hand) {
-                        if card.get_suit() == flush_suit {
+                        if card.get_suit() == flush_suit 
+                            && hand.len() < 5 {
                             hand.push(
                                 PlayedCard::new(
                                     card.get_rank().unwrap(),
@@ -678,6 +679,57 @@ mod tests {
             ))
         );
     }
+
+    #[test]
+    fn ai_can_play_flush_when_it_has_more_than_five_of_a_suit() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Flush,
+            cards: [
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Eight, Suit::Spades, false
+                ),
+            ))
+        );
+    }
+
 
     #[test]
     fn ai_can_pass_on_fct() {
