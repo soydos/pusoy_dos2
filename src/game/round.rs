@@ -122,12 +122,12 @@ impl Round {
         while self.get_player(&next_player)
             .unwrap().get_hand().len() < 1 {
 
+            next_player = self.get_next_player_in_rotation(&next_player);
             if next_player == new_last_player.clone()
                 .unwrap_or("invalid_player".to_string()) {
                 new_last_move = Some(Hand::Pass);
             }
 
-            next_player = self.get_next_player_in_rotation(&next_player);
         }
 
         let output_next_player = if self.get_players_still_in(&players)
@@ -1342,4 +1342,125 @@ mod tests {
             Hand::Pass
         );
     }
+
+    #[test]
+    fn playing_on_pass_sets_player_as_last_move() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![];
+        let c_cards = vec![Card::Standard{
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+
+        let last_move = Some(
+            Hand::Pass
+        );
+
+        let round = Round::new(
+            players,
+            Some("a".to_string()),
+            last_move,
+            Some("c".to_string()),
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER
+        );
+
+        let played_hand = vec![
+            PlayedCard::new(Rank::Three, Suit::Clubs, false)
+        ];
+
+        let new_round = round.submit_move(
+            "a",
+            played_hand
+        ).unwrap();
+
+        assert_eq!(
+            new_round.get_last_player().unwrap(),
+            "a".to_string()
+        );
+    }
+
+    #[test]
+    fn when_there_are_two_players_left_pass_clears_the_table() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![];
+        let c_cards = vec![];
+        let d_cards = vec![
+             Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+        let player_d = Player::new("d".to_string(), d_cards);
+
+        let players = vec![
+            player_a,
+            player_b,
+            player_c,
+            player_d
+        ];
+
+        let last_move = Some(
+            Hand::Pair(
+                PlayedCard::new(
+                    Rank::Three,
+                    Suit::Clubs,
+                    false,
+                ),
+                PlayedCard::new(
+                    Rank::Three,
+                    Suit::Clubs,
+                    false,
+                )
+            )
+        );
+
+        let round = Round::new(
+            players,
+            Some("a".to_string()),
+            last_move,
+            Some("d".to_string()),
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER
+        );
+
+        let played_hand = vec![];
+
+        let new_round = round.submit_move(
+            "a",
+            played_hand
+        ).unwrap();
+
+        assert_eq!(
+            new_round.get_last_move().unwrap(),
+            Hand::Pass
+        );
+    }
+
 }
