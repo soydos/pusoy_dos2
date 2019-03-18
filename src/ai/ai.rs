@@ -20,9 +20,19 @@ pub fn get_move(
     let move_hand = last_move.unwrap();
     match move_hand {
         Hand::Pass => {
-            if player_hand.len() == 1 {
+
+            let cards_left = player_hand.len();
+            let num_jokers = get_jokers(&player_hand).len();
+
+            if cards_left == num_jokers {
+                let hand = match cards_left {
+                    1 | 2 | 3 | 5 => player_hand.clone(),
+                    _ => vec!(
+                            *player_hand.clone().first().unwrap(),
+                        )
+                };
                 return Some(convert_to_played(
-                    &player_hand.clone(),
+                    &hand,
                     suit_order,
                     rank_order
                 ));
@@ -812,6 +822,53 @@ mod tests {
             ),
             Some(vec!(
                 PlayedCard::new(Rank::Three, Suit::Clubs, true)
+            ))
+        );
+    }
+
+    #[test]
+    fn if_ai_only_has_jokers_left_it_will_play_them() {
+        let previous_move = Some(Hand::Pass);
+        let hand = vec!(
+            Card::Joker,
+            Card::Joker,
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, true),
+                PlayedCard::new(Rank::Three, Suit::Clubs, true)
+            ))
+        );
+    }
+
+    #[test]
+    fn if_ai_only_has_4_jokers_left_it_will_play_one() {
+        let previous_move = Some(Hand::Pass);
+        let hand = vec!(
+            Card::Joker,
+            Card::Joker,
+            Card::Joker,
+            Card::Joker,
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, true),
             ))
         );
 
