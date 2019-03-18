@@ -1,4 +1,4 @@
-use crate::game::{Hand, Player, compare_hands};
+use crate::game::{Hand, Player, compare_hands, Trick, TrickType};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use std::collections::HashMap;
 
@@ -19,7 +19,17 @@ pub fn get_move(
 
     let move_hand = last_move.unwrap();
     match move_hand {
-        Hand::Pass => Some(get_lowest_natural_card(&player_hand)),
+        Hand::Pass => {
+            if player_hand.len() == 1 {
+                return Some(convert_to_played(
+                    &player_hand.clone(),
+                    suit_order,
+                    rank_order
+                ));
+            }
+
+            Some(get_lowest_natural_card(&player_hand))
+        },
         Hand::Single(_) => {
             let played_single = 
                 get_lowest_natural_card_against_played(
@@ -65,7 +75,58 @@ pub fn get_move(
             }
 
         },
-        _ => get_pass()
+        Hand::FiveCardTrick(_) => {
+            match move_hand {
+                Hand::FiveCardTrick(
+                    Trick{
+                        trick_type: TrickType::Flush,
+                        cards: _
+                    }
+                ) => {
+                    let counts = get_suit_counts(
+                        player_hand.clone()
+                    );
+
+                    let mut flush_suit = None;
+
+                    for (r, count) in &counts {
+                        if *count >= 5 {
+                            flush_suit = Some(*r);
+                        }
+                    }
+
+                    if flush_suit == None {
+                        return get_pass();
+                    }
+
+                    let mut hand = vec!();
+                    for card in get_natural_cards(&player_hand) {
+                        if card.get_suit() == flush_suit 
+                            && hand.len() < 5 {
+                            hand.push(
+                                PlayedCard::new(
+                                    card.get_rank().unwrap(),
+                                    flush_suit.unwrap(),
+                                    false
+                                )
+                            );
+                        }
+                    }
+
+                    let built_hand = Hand::build(hand.clone()).unwrap();
+                    if compare_hands(
+                        move_hand,
+                        built_hand,
+                        suit_order,
+                        rank_order) {
+                        return Some(hand.clone());
+                    }
+
+                    get_pass()
+                },
+                _ => get_pass()
+            }
+        },
     }
     
 }
@@ -115,15 +176,26 @@ fn get_multiple_card_hand(
 }
 
 fn get_counts(cards: Vec<Card>) -> HashMap<Rank, usize> {
-        cards.iter()
-            .filter(|c| !c.get_rank().is_none())
-            .fold(HashMap::new(), |mut acc, &card| {
-                *acc.entry(
-                    card.get_rank().unwrap()
-                ).or_insert(0) += 1;
-                acc
-            })
-    }
+    cards.iter()
+        .filter(|c| !c.get_rank().is_none())
+        .fold(HashMap::new(), |mut acc, &card| {
+            *acc.entry(
+                card.get_rank().unwrap()
+            ).or_insert(0) += 1;
+            acc
+        })
+}
+
+fn get_suit_counts(cards: Vec<Card>) -> HashMap<Suit, usize> {
+    cards.iter()
+        .filter(|c| !c.get_rank().is_none())
+        .fold(HashMap::new(), |mut acc, &card| {
+            *acc.entry(
+                card.get_suit().unwrap()
+            ).or_insert(0) += 1;
+            acc
+        })
+}
 
 fn get_pass() -> Option<Vec<PlayedCard>>{
     Some(vec!())
@@ -211,13 +283,34 @@ fn get_jokers(hand: &Vec<Card>) -> Vec<Card>{
         c.get_rank() == None
     })
     .map(|&c| c.clone()).collect::<Vec<Card>>()
+}
 
+fn convert_to_played(
+    hand: &Vec<Card>,
+    suit_order: [Suit; 4],
+    rank_order: [Rank; 13]
+) -> Vec<PlayedCard> {
+    hand.iter().map(|&c| {
+        match c {
+            Card::Standard{
+                rank, suit
+            } => {
+                PlayedCard::new(rank, suit, false)
+            },
+            Card::Joker => PlayedCard::new(
+                rank_order[0],
+                suit_order[0],
+                true
+            )
+        }
+    }).collect::<Vec<PlayedCard>>()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::cards::*;
+    use crate::game::{TrickType, Trick};
 
     static DEFAULT_SUIT_ORDER: [Suit; 4] =
         [Suit::Clubs, Suit::Hearts, Suit::Diamonds, Suit::Spades];
@@ -563,6 +656,162 @@ mod tests {
                 PlayedCard::new(
                     Rank::Six, Suit::Spades, false
                 ),
+            ))
+        );
+
+    }
+
+    #[test]
+    fn ai_can_play_flush() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Flush,
+            cards: [
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Eight, Suit::Spades, false
+                ),
+            ))
+        );
+    }
+
+    #[test]
+    fn ai_can_play_flush_when_it_has_more_than_five_of_a_suit() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Flush,
+            cards: [
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Eight, Suit::Spades, false
+                ),
+            ))
+        );
+    }
+
+
+    #[test]
+    fn ai_can_pass_on_fct() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Flush,
+            cards: [
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Eight, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!())
+        );
+
+    }
+
+    #[test]
+    fn if_ai_has_a_joker_left_on_an_empty_table_it_will_play() {
+        let previous_move = Some(Hand::Pass);
+        let hand = vec!(
+            Card::Joker
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, true)
             ))
         );
 
