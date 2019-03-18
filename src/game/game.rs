@@ -14,7 +14,6 @@ use wasm_bindgen::prelude::*;
 pub struct Game {
     num_decks: u8,
     num_jokers: u8,
-    _reversals_enabled: bool,
     round: Round,
     winners: Vec<String>,
 }
@@ -24,7 +23,7 @@ impl Game {
         num_decks: u8,
         num_jokers: u8,
         player_ids: &[String],
-        _reversals_enabled: bool,
+        reversals_enabled: bool,
     ) -> Game {
         let mut deck = Deck::new(num_decks, num_jokers);
         deck.shuffle();
@@ -43,12 +42,12 @@ impl Game {
             None,
             get_suit_array(), // todo - set when game is setup
             get_rank_array(),
+            reversals_enabled
         );
 
         Game {
             num_decks,
             num_jokers,
-            _reversals_enabled,
             round,
             winners: vec!()
         }
@@ -192,12 +191,12 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
+            true
         );
 
         let mut game = Game{
             num_decks: 1,
             num_jokers: 1,
-            _reversals_enabled: false,
             round,
             winners: vec!(),
         };
@@ -252,12 +251,12 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
+            true
         );
 
         let mut game = Game{
             num_decks: 1,
             num_jokers: 1,
-            _reversals_enabled: false,
             round,
             winners: vec!(),
         };
@@ -307,12 +306,12 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
+            true
         );
 
         let mut game = Game{
             num_decks: 1,
             num_jokers: 1,
-            _reversals_enabled: false,
             round,
             winners: vec!["c".to_string()],
         };
@@ -356,12 +355,12 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
+            true
         );
 
         let mut game = Game{
             num_decks: 1,
             num_jokers: 1,
-            _reversals_enabled: false,
             round,
             winners: vec!["c".to_string()],
         };
