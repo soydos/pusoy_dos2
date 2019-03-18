@@ -1,4 +1,4 @@
-use super::{compare_hands, Hand, Player};
+use super::{compare_hands, Hand, Player, Trick, TrickType};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use serde::Serialize;
 
@@ -20,6 +20,7 @@ pub struct Round {
     last_player: Option<String>,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13],
+    reversals_enabled: bool,
 }
 
 impl Round {
@@ -30,6 +31,7 @@ impl Round {
         last_player: Option<String>,
         suit_order: [Suit; 4],
         rank_order: [Rank; 13],
+        reversals_enabled: bool,
     ) -> Round {
         Round {
             players,
@@ -38,6 +40,7 @@ impl Round {
             last_player,
             suit_order,
             rank_order,
+            reversals_enabled,
         }
     }
 
@@ -137,13 +140,31 @@ impl Round {
             None
         };
 
+        let (
+            suit_order,
+            rank_order
+        ) = match hand.unwrap_or(Hand::Pass) {
+            Hand::FiveCardTrick(Trick{
+                trick_type: TrickType::FourOfAKind,
+                cards: _
+            }) => {
+                let mut suits = self.suit_order.clone();
+                let mut ranks = self.rank_order.clone();
+                suits.reverse();
+                ranks.reverse();
+                (suits, ranks)
+            }, 
+            _ => (self.suit_order, self.rank_order)
+        };
+
         Ok(Self::new(
             players,
             output_next_player,
             new_last_move,
             new_last_player,
-            self.suit_order,
-            self.rank_order,
+            suit_order,
+            rank_order,
+            self.reversals_enabled
         ))
     }
 
@@ -281,7 +302,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         assert_eq!(round.get_next_player(), Some("a".to_string()));
@@ -307,6 +329,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
+            true
         );
 
         assert_eq!(round.get_next_player(), Some("b".to_string()));
@@ -331,7 +354,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         let err = round.submit_move("a", vec![]).err().unwrap();
@@ -364,7 +388,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false)
@@ -402,7 +427,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -441,6 +467,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -481,6 +508,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false)
@@ -520,6 +548,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false)
@@ -561,6 +590,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
@@ -597,7 +627,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
@@ -639,7 +670,8 @@ mod tests {
             last_move,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Four, Suit::Clubs, false),
@@ -691,7 +723,8 @@ mod tests {
             last_move,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
@@ -730,7 +763,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -769,7 +803,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -811,7 +846,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -858,7 +894,8 @@ mod tests {
             None,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -931,7 +968,8 @@ mod tests {
             last_move,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![];
 
@@ -1010,7 +1048,8 @@ mod tests {
             last_move,
             None,
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![
             PlayedCard::new(
@@ -1095,7 +1134,8 @@ mod tests {
             last_move,
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
         let played_hand = vec![];
 
@@ -1136,7 +1176,8 @@ mod tests {
             Some(Hand::Pass),
             Some("a".to_string()),
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         let played_hand = vec![
@@ -1196,7 +1237,8 @@ mod tests {
             last_move,
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         let played_hand = vec![];
@@ -1256,7 +1298,8 @@ mod tests {
             last_move,
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         let played_hand = vec![
@@ -1327,7 +1370,8 @@ mod tests {
             last_move,
             Some("b".to_string()),
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         let played_hand = vec![];
@@ -1376,7 +1420,8 @@ mod tests {
             last_move,
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         let played_hand = vec![
@@ -1447,7 +1492,8 @@ mod tests {
             last_move,
             Some("d".to_string()),
             DEFAULT_SUIT_ORDER,
-            DEFAULT_RANK_ORDER
+            DEFAULT_RANK_ORDER,
+            true
         );
 
         let played_hand = vec![];
@@ -1460,6 +1506,164 @@ mod tests {
         assert_eq!(
             new_round.get_last_move().unwrap(),
             Hand::Pass
+        );
+    }
+
+    #[test]
+    fn when_reversals_are_enabled_4ofakind_reverses_orders() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![Card::Standard{
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let last_move = Some(Hand::Pass);
+
+        let round = Round::new(
+            players,
+            Some("a".to_string()),
+            last_move,
+            Some("b".to_string()),
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+            true
+        );
+
+        let played_hand = vec![
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Four, Suit::Clubs, false),
+        ];
+
+        let new_round = round.submit_move(
+            "a",
+            played_hand
+        ).unwrap();
+
+        let mut expected_suit_order = DEFAULT_SUIT_ORDER;
+        let mut expected_rank_order = DEFAULT_RANK_ORDER;
+        expected_suit_order.reverse();
+        expected_rank_order.reverse();
+
+        assert_eq!(
+            new_round.get_suit_order(),
+            expected_suit_order
+        );
+
+        assert_eq!(
+            new_round.get_rank_order(),
+            expected_rank_order
+        );
+    }
+
+    #[test]
+    fn when_reversals_are_enabled_only_a_4or5ofakind_reverses() {
+        let a_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![Card::Standard{
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let last_move = Some(Hand::Pass);
+
+        let round = Round::new(
+            players,
+            Some("a".to_string()),
+            last_move,
+            Some("b".to_string()),
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+            true
+        );
+
+        let played_hand = vec![
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Four, Suit::Clubs, false),
+            PlayedCard::new(Rank::Four, Suit::Clubs, false),
+        ];
+
+        let new_round = round.submit_move(
+            "a",
+            played_hand
+        ).unwrap();
+
+        let expected_suit_order = DEFAULT_SUIT_ORDER;
+        let expected_rank_order = DEFAULT_RANK_ORDER;
+
+        assert_eq!(
+            new_round.get_suit_order(),
+            expected_suit_order
+        );
+
+        assert_eq!(
+            new_round.get_rank_order(),
+            expected_rank_order
         );
     }
 
