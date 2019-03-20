@@ -63,7 +63,7 @@ impl Round {
         cards: Vec<PlayedCard>
     ) -> Result<Round, SubmitError> {
         if user_id != self.get_next_player()
-            .unwrap_or("invalid_player".to_string()) {
+            .expect("invalid_player") {
             return Err(SubmitError::NotCurrentPlayer);
         }
 
@@ -73,65 +73,43 @@ impl Round {
         }
 
         if self.last_move == None {
-            if cards.len() == 0 {
-                return Err(SubmitError::FirstRoundPass);
-            } else if !self.contains_lowest_card(cards.clone()) {
-                return Err(
-                    SubmitError::FirstHandMustContainLowestCard
-                );
+
+            let starting_move_error = self.check_starting_move(
+                &cards
+            );
+
+            if starting_move_error.is_some() {
+                return Err(starting_move_error.unwrap());
             }
+
         } else if self.last_move != Some(Hand::Pass)
-            && hand != Some(Hand::Pass) {
-            if !self.hand_beats_last_move(hand.unwrap()) {
+            && hand != Some(Hand::Pass) 
+            && !self.hand_beats_last_move(hand.unwrap()) {
                 return Err(SubmitError::HandNotHighEnough);
-            }
         }
 
         let mut player = self.get_player(user_id)
             .expect("invalid player!");
 
-        let hand_cards = cards.iter()
-            .map(|card| card.to_card())
-            .collect();
-        
-        match player.play_move(hand_cards) {
+        match player.play_move(cards) {
             Ok(p) => player = p,
             _ => return Err(SubmitError::PlayerDoesntHaveCard)
         }
 
-        let players = self.players.iter().map(|p| {
-            if p.get_id() == user_id {
-                player.clone()
-            } else {
-                p.clone()
-            }
-        }).collect();
+        let players = self.get_updated_players(&player);
+        let new_last_player = if hand == Some(Hand::Pass) {
+            self.last_player.to_owned()
+        } else {
+            Some(user_id.to_string())
+        };
 
-        let mut new_last_move = hand;
-        let mut new_last_player = Some(user_id.to_string());
-
-        if hand == Some(Hand::Pass) {
-            new_last_move = self.last_move;
-            new_last_player = self.last_player.to_owned();
-        }
-
-        let mut next_player = self.get_next_player_in_rotation(user_id);
-
-        if next_player == new_last_player.clone()
-            .unwrap_or("invalid_player".to_string()) {
-            new_last_move = Some(Hand::Pass);
-        }
-
-        while self.get_player(&next_player)
-            .unwrap().get_hand().len() < 1 {
-
-            next_player = self.get_next_player_in_rotation(&next_player);
-            if next_player == new_last_player.clone()
-                .unwrap_or("invalid_player".to_string()) {
-                new_last_move = Some(Hand::Pass);
-            }
-
-        }
+        let ( 
+            new_last_move, next_player
+        ) = self.get_last_move_and_new_player(
+            user_id,
+            hand,
+            &new_last_player
+        );
 
         let output_next_player = if self.get_players_still_in(&players)
             .len() > 1 {
@@ -140,21 +118,9 @@ impl Round {
             None
         };
 
-        let mut suit_order = self.suit_order;
-        let mut rank_order = self.rank_order;
-
-        if self.reversals_enabled {
-            match hand.unwrap_or(Hand::Pass) {
-                Hand::FiveCardTrick(Trick{
-                    trick_type: TrickType::FourOfAKind,
-                    cards: _
-                }) => {
-                    suit_order.reverse();
-                    rank_order.reverse();
-                }, 
-                _ => ()
-            }
-        }
+        let (
+            suit_order, rank_order
+        ) = self.get_updated_suit_and_rank_order(hand);
 
         Ok(Self::new(
             players,
@@ -196,6 +162,22 @@ impl Round {
         self.rank_order
     }
 
+    fn check_starting_move(
+        &self,
+        cards:&Vec<PlayedCard>) -> Option<SubmitError> {
+            if cards.len() == 0 {
+                return Some(SubmitError::FirstRoundPass);
+            }
+
+            if !self.contains_lowest_card(cards.clone()) {
+                return Some(
+                    SubmitError::FirstHandMustContainLowestCard
+                );
+            }
+
+            None
+    }
+
     fn get_starting_player(&self) -> Option<String> {
         let lowest_card = Card::Standard {
             suit: self.suit_order[0],
@@ -209,6 +191,17 @@ impl Round {
         None
     }
 
+    fn get_updated_players(
+        &self,
+        player: &Player) -> Vec<Player> {
+        self.players.iter().map(|p| {
+            if p.get_id() == player.get_id() {
+                player.clone()
+            } else {
+                p.clone()
+            }
+        }).collect()
+    }
 
     fn hand_beats_last_move(&self, cards: Hand) -> bool {
         compare_hands(
@@ -254,6 +247,63 @@ impl Round {
             .map(|p| p.clone())
             .collect()
     }
+
+    fn get_last_move_and_new_player(&self,
+            user_id: &str,
+            hand: Option<Hand>,
+            new_last_player: &Option<String>
+    ) -> (Option<Hand>, String) {
+
+        let mut new_last_move = hand;
+        let mut next_player = self.get_next_player_in_rotation(
+            user_id
+        );
+
+        if hand == Some(Hand::Pass) {
+            new_last_move = self.last_move;
+        }
+
+        if next_player == new_last_player.clone()
+            .unwrap_or("invalid_player".to_string()) {
+            new_last_move = Some(Hand::Pass);
+        }
+
+        while self.get_player(&next_player)
+            .unwrap().get_hand().len() < 1 {
+
+            next_player = self.get_next_player_in_rotation(&next_player);
+            if next_player == new_last_player.clone()
+                .unwrap_or("invalid_player".to_string()) {
+                new_last_move = Some(Hand::Pass);
+            }
+        }
+
+        (new_last_move, next_player)
+    }
+
+    fn get_updated_suit_and_rank_order(
+        &self,
+        hand:Option<Hand>
+    ) -> ([Suit;4], [Rank;13]) {
+        let mut suit_order = self.suit_order;
+        let mut rank_order = self.rank_order;
+
+        if self.reversals_enabled {
+            match hand.unwrap_or(Hand::Pass) {
+                Hand::FiveCardTrick(Trick{
+                    trick_type: TrickType::FourOfAKind,
+                    cards: _
+                }) => {
+                    suit_order.reverse();
+                    rank_order.reverse();
+                }, 
+                _ => ()
+            }
+        }
+
+        (suit_order, rank_order)
+    }
+
 }
 
 #[cfg(test)]
