@@ -1,4 +1,4 @@
-use crate::cards::Card;
+use crate::cards::{Card, PlayedCard};
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
@@ -33,9 +33,9 @@ impl Player {
         self.hand.len()
     }
 
-    pub fn play_move(&mut self, cards: Vec<Card>) -> Result<Player, PlayerError> {
+    pub fn play_move(&mut self, cards: Vec<PlayedCard>) -> Result<Player, PlayerError> {
         for card in cards.iter() {
-            match self.hand.iter().position(|&c| c == *card) {
+            match self.hand.iter().position(|&c| c == card.to_card()) {
                 Some(index) => self.hand.remove(index),
                 _ => return Err(PlayerError::PlayerDoesntHaveCard),
             };
@@ -118,10 +118,11 @@ mod tests {
             },
         ];
 
-        let played_hand = vec![Card::Standard {
-            rank: Rank::Three,
-            suit: Suit::Clubs,
-        }];
+        let played_hand = vec![PlayedCard::new(
+            Rank::Three,
+            Suit::Clubs,
+            false
+        )];
 
         let remaining_hand = vec![Card::Standard {
             rank: Rank::Six,
@@ -148,10 +149,11 @@ mod tests {
             },
         ];
 
-        let played_hand = vec![Card::Standard {
-            rank: Rank::Five,
-            suit: Suit::Clubs,
-        }];
+        let played_hand = vec![PlayedCard::new(
+            Rank::Five,
+            Suit::Clubs,
+            false
+        )];
 
         let mut player = Player::new(id, hand);
         let err = player.play_move(played_hand).err().unwrap();
@@ -173,10 +175,11 @@ mod tests {
             },
         ];
 
-        let played_hand = vec![Card::Standard {
-            rank: Rank::Three,
-            suit: Suit::Clubs,
-        }];
+        let played_hand = vec![PlayedCard::new(
+            Rank::Three,
+            Suit::Clubs,
+            false
+        )];
 
         let remaining_hand = vec![Card::Standard {
             rank: Rank::Six,
