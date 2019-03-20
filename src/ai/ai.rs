@@ -38,6 +38,15 @@ pub fn get_move(
                 ));
             }
 
+            let hands = get_multiple_card_hands(
+                2,
+                &player_hand,
+            );
+
+            if hands.len() > 0 {
+                return Some(hands.first().unwrap().to_vec());
+            }
+
             Some(get_lowest_natural_card(&player_hand))
         },
         Hand::Single(_) => {
@@ -70,9 +79,9 @@ pub fn get_move(
             get_pass()
         },
         Hand::Pair(_, _) | Hand::Prial(_, _, _) => {
-            let hand = get_multiple_card_hand(
+            let hand = get_beating_multiple_card_hand(
                 move_hand.to_cards().len(),
-                player_hand,
+                &player_hand,
                 move_hand,
                 suit_order,
                 rank_order,
@@ -141,13 +150,31 @@ pub fn get_move(
     
 }
 
-fn get_multiple_card_hand(
+fn get_beating_multiple_card_hand(
     n: usize,
-    player_hand: Vec<Card>,
+    player_hand: &Vec<Card>,
     move_hand: Hand,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13], 
 ) -> Option<Vec<PlayedCard>> {
+    for hand in get_multiple_card_hands(n, player_hand) {
+        let built_hand = Hand::build(hand.clone()).unwrap();
+        if compare_hands(
+            move_hand,
+            built_hand,
+            suit_order,
+            rank_order) {
+            return Some(hand.clone());
+        }
+    }
+
+    None
+}
+
+fn get_multiple_card_hands(
+    n: usize,
+    player_hand: &Vec<Card>,
+) -> Vec<Vec<PlayedCard>> {
     let counts = get_counts(player_hand.clone());
     let mut rank_options = vec!();
     for (r, count) in &counts {
@@ -157,6 +184,8 @@ fn get_multiple_card_hand(
     }
 
     rank_options.sort();
+
+    let mut hands = vec!();
 
     for &rank in &rank_options {
         let mut hand = vec!();
@@ -172,19 +201,11 @@ fn get_multiple_card_hand(
             }
         }
 
-        let built_hand = Hand::build(hand.clone()).unwrap();
-        if compare_hands(
-            move_hand,
-            built_hand,
-            suit_order,
-            rank_order) {
-            return Some(hand.clone());
-        }
+        hands.push(hand.clone());
     }
 
-    None
+    hands
 }
-
 fn get_counts(cards: Vec<Card>) -> HashMap<Rank, usize> {
     cards.iter()
         .filter(|c| !c.get_rank().is_none())
@@ -871,7 +892,33 @@ mod tests {
                 PlayedCard::new(Rank::Three, Suit::Clubs, true),
             ))
         );
-
     }
 
+    #[test]
+    fn ai_will_lead_with_low_pair_if_possible() {
+        let previous_move = Some(Hand::Pass);
+        let hand = vec!(
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Ace, suit: Suit::Clubs},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ))
+        );
+    }
+
+    fn ai_will_not_lead_with_pair_if_lower_single() {
+
+    }
 }
