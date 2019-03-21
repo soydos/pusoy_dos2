@@ -38,16 +38,46 @@ pub fn get_move(
                 ));
             }
 
-            let hands = get_multiple_card_hands(
+// todo - pairs vs low single
+            let pairs = get_multiple_card_hands(
                 2,
                 &player_hand,
             );
 
-            if hands.len() > 0 {
-                return Some(hands.first().unwrap().to_vec());
+            let first_pair = if pairs.len() > 0 {
+                Some(pairs.first().unwrap().to_vec())
+            } else {
+                None
+            };
+
+            let lowest_natural_card = get_lowest_natural_card(
+                &player_hand
+            );
+
+            if first_pair != None {
+            
+                let built_single = Hand::build(
+                    lowest_natural_card.clone()
+                ).unwrap();
+
+                let built_pair = Hand::build(
+                    vec![first_pair.clone().unwrap()[1].clone()]
+                ).unwrap();
+
+                
+                if !compare_hands(
+                    built_single,
+                    built_pair,
+                    suit_order,
+                    rank_order
+                ) {
+
+                    return first_pair.clone();
+                }
             }
 
-            Some(get_lowest_natural_card(&player_hand))
+// end todo
+            Some(lowest_natural_card)
         },
         Hand::Single(_) => {
             let played_single = 
@@ -918,7 +948,26 @@ mod tests {
         );
     }
 
+    #[test]
     fn ai_will_not_lead_with_pair_if_lower_single() {
+        let previous_move = Some(Hand::Pass);
+        let hand = vec!(
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Ace, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Ace, suit: Suit::Clubs},
+        );
+        let player = Player::new("cpu".to_string(), hand);
 
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ))
+        );
     }
 }
