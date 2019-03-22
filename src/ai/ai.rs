@@ -38,7 +38,6 @@ pub fn get_move(
                 ));
             }
 
-// todo - pairs vs low single
             let pairs = get_multiple_card_hands(
                 2,
                 &player_hand,
@@ -55,28 +54,13 @@ pub fn get_move(
             );
 
             if first_pair != None {
-            
-                let built_single = Hand::build(
-                    lowest_natural_card.clone()
-                ).unwrap();
-
-                let built_pair = Hand::build(
-                    vec![first_pair.clone().unwrap()[1].clone()]
-                ).unwrap();
-
-                
-                if !compare_hands(
-                    built_single,
-                    built_pair,
-                    suit_order,
-                    rank_order
-                ) {
-
+                if first_pair.iter().any(|p| {
+                    p[0] == lowest_natural_card[0]
+                }) {
                     return first_pair.clone();
                 }
             }
 
-// end todo
             Some(lowest_natural_card)
         },
         Hand::Single(_) => {
@@ -915,6 +899,7 @@ mod tests {
             get_move(
                 previous_move,
                 Some(player),
+
                 DEFAULT_SUIT_ORDER,
                 DEFAULT_RANK_ORDER,
             ),
@@ -970,4 +955,30 @@ mod tests {
             ))
         );
     }
+
+    #[test]
+    fn ai_will_lead_with_pair_if_possible() {
+        let previous_move = Some(Hand::Pass);
+        let hand = vec!(
+            Card::Standard{rank: Rank::Jack, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{rank: Rank::Queen, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::King, suit: Suit::Clubs},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Jack, Suit::Clubs, false),
+                PlayedCard::new(Rank::Jack, Suit::Hearts, false),
+            ))
+        );
+    }
+
 }
