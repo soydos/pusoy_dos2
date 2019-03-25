@@ -1,6 +1,7 @@
 use crate::game::{Hand, Player, compare_hands, Trick, TrickType};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use std::collections::HashMap;
+use super::{find_pairs, get_sets_of_same_rank};
 
 pub fn get_move(
     last_move: Option<Hand>,
@@ -14,7 +15,7 @@ pub fn get_move(
     let player_hand = player.get_hand();
 
     if last_move == None {
-        return Some(get_lowest_natural_card(&player_hand))
+        return Some(get_all_low_cards(&player_hand))
     } 
 
     let move_hand = last_move.unwrap();
@@ -38,8 +39,7 @@ pub fn get_move(
                 ));
             }
 
-            let pairs = get_multiple_card_hands(
-                2,
+            let pairs = find_pairs(
                 &player_hand,
             );
 
@@ -64,9 +64,18 @@ pub fn get_move(
             Some(lowest_natural_card)
         },
         Hand::Single(_) => {
+
+            let pairs = find_pairs(&player_hand);
+
+            let single_cards = player_hand.iter().filter(|&p1| {
+                !pairs.iter().any(|pair| {
+                    pair.iter().any(|p2| *p1 == p2.to_card())
+                })
+            }).map(|c| c.clone()).collect();
+
             let played_single = 
                 get_lowest_natural_card_against_played(
-                    &player_hand,
+                    &single_cards,
                     move_hand,
                     suit_order,
                     rank_order
@@ -110,6 +119,33 @@ pub fn get_move(
         },
         Hand::FiveCardTrick(_) => {
             match move_hand {
+/*                Hand::FiveCardTrick(
+                    Trick{
+                        trick_type: TrickType::Straight,
+                        cards: _
+                    }
+                ) => {
+
+                    // todo - determine whether have a straight
+                    // compare highest cards and submit if win
+                    Some(vec![
+                        PlayedCard::new(
+                            Rank::Four, Suit::Spades, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Five, Suit::Clubs, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Six, Suit::Spades, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Seven, Suit::Clubs, false
+                        ),
+                        PlayedCard::new(
+                            Rank::Eight, Suit::Spades, false
+                        ),
+                    ])
+                }, */
                 Hand::FiveCardTrick(
                     Trick{
                         trick_type: TrickType::Flush,
@@ -171,7 +207,7 @@ fn get_beating_multiple_card_hand(
     suit_order: [Suit; 4],
     rank_order: [Rank; 13], 
 ) -> Option<Vec<PlayedCard>> {
-    for hand in get_multiple_card_hands(n, player_hand) {
+    for hand in get_sets_of_same_rank(n, player_hand) {
         let built_hand = Hand::build(hand.clone()).unwrap();
         if compare_hands(
             move_hand,
@@ -183,52 +219,6 @@ fn get_beating_multiple_card_hand(
     }
 
     None
-}
-
-fn get_multiple_card_hands(
-    n: usize,
-    player_hand: &Vec<Card>,
-) -> Vec<Vec<PlayedCard>> {
-    let counts = get_counts(player_hand.clone());
-    let mut rank_options = vec!();
-    for (r, count) in &counts {
-        if *count == n {
-            rank_options.push(*r);
-        }
-    }
-
-    rank_options.sort();
-
-    let mut hands = vec!();
-
-    for &rank in &rank_options {
-        let mut hand = vec!();
-        for card in get_natural_cards(&player_hand) {
-            if card.get_rank().unwrap() == rank {
-                hand.push(
-                    PlayedCard::new(
-                        rank,
-                        card.get_suit().unwrap(),
-                        false
-                    )
-                );
-            }
-        }
-
-        hands.push(hand.clone());
-    }
-
-    hands
-}
-fn get_counts(cards: Vec<Card>) -> HashMap<Rank, usize> {
-    cards.iter()
-        .filter(|c| !c.get_rank().is_none())
-        .fold(HashMap::new(), |mut acc, &card| {
-            *acc.entry(
-                card.get_rank().unwrap()
-            ).or_insert(0) += 1;
-            acc
-        })
 }
 
 fn get_suit_counts(cards: Vec<Card>) -> HashMap<Suit, usize> {
@@ -244,6 +234,40 @@ fn get_suit_counts(cards: Vec<Card>) -> HashMap<Suit, usize> {
 
 fn get_pass() -> Option<Vec<PlayedCard>>{
     Some(vec!())
+}
+
+fn get_all_low_cards(hand: &Vec<Card>) -> Vec<PlayedCard> {
+    let natural_cards = get_natural_cards(hand);
+    let player_card = natural_cards.first();
+    let (_head, tail_cards) = natural_cards.split_at(1);
+
+    if player_card.is_some() {
+        let card = player_card.unwrap();
+        let mut all_low_cards = vec![
+            PlayedCard::new(
+                card.get_rank()
+                    .unwrap(),
+                card.get_suit()
+                    .unwrap(),
+                false)
+        ];
+
+        for c in tail_cards {
+            if c.get_rank() == card.get_rank() {
+                all_low_cards.push(
+                    PlayedCard::new(
+                        c.get_rank().unwrap(),
+                        c.get_suit().unwrap(),
+                        false
+                    )
+                );
+            }
+        }
+
+        return all_low_cards;
+    }
+
+    vec![]
 }
 
 fn get_lowest_natural_card(hand: &Vec<Card>) -> Vec<PlayedCard>{
@@ -980,5 +1004,146 @@ mod tests {
             ))
         );
     }
+
+    #[test]
+    fn ai_wont_split_pair_for_single() {
+        let previous_move = Some(Hand::Single(
+            PlayedCard::new(Rank::Three, Suit::Clubs, false)
+        ));
+
+        let hand = vec!(
+            Card::Standard{rank: Rank::Jack, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{rank: Rank::Queen, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::King, suit: Suit::Clubs},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Queen, Suit::Clubs, false),
+            ))
+        );
+    }
+
+    #[test]
+    fn ai_could_open_on_a_pair() {
+        let previous_move = None;
+        let hand = vec!(
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Three, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{rank: Rank::Queen, suit: Suit::Hearts},
+            Card::Standard{rank: Rank::King, suit: Suit::Clubs},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Spades, false),
+            ))
+        );
+    }
+
+/*
+    #[test]
+    fn it_can_beat_a_straight_with_another_straight() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Straight,
+            cards: [
+                PlayedCard::new(Rank::Seven, Suit::Spades, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Five, Suit::Hearts, false),
+                PlayedCard::new(Rank::Four, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Four, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(
+                    Rank::Four, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Five, Suit::Clubs, false
+                ),
+                PlayedCard::new(
+                    Rank::Six, Suit::Spades, false
+                ),
+                PlayedCard::new(
+                    Rank::Seven, Suit::Clubs, false
+                ),
+                PlayedCard::new(
+                    Rank::Eight, Suit::Spades, false
+                ),
+            ))
+        );
+    }
+
+/*
+    #[test]
+    fn it_passes_on_a_straight_when_it_cant_play() {
+         let previous_move = Some(Hand::FiveCardTrick(Trick{
+            trick_type: TrickType::Straight,
+            cards: [
+                PlayedCard::new(Rank::Seven, Suit::Spades, false),
+                PlayedCard::new(Rank::Six, Suit::Clubs, false),
+                PlayedCard::new(Rank::Five, Suit::Hearts, false),
+                PlayedCard::new(Rank::Four, Suit::Clubs, false),
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            ]
+        }));
+        let hand = vec!(
+            Card::Standard{rank: Rank::Four, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Ten, suit: Suit::Spades},
+
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!())
+        );
+
+    }
+*/ */
 
 }
