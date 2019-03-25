@@ -2,7 +2,7 @@
 name = "pusoy_dos2"
 description = "pusoy dos lib"
 license = "MIT"
-version = "0.6.1"
+version = "0.6.2"
 authors = ["Ben Brunton <benbrunton@hotmail.com>"]
 edition = "2018"
 
