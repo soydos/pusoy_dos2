@@ -1,7 +1,6 @@
-use crate::game::{Hand, Player, compare_hands, Trick, TrickType};
+use crate::game::{Hand, Player, compare_hands};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
-use std::collections::HashMap;
-use super::{find_pairs, get_sets_of_same_rank};
+use super::{find_pairs, get_sets_of_same_rank, find_fct};
 
 pub fn get_move(
     last_move: Option<Hand>,
@@ -9,7 +8,6 @@ pub fn get_move(
     suit_order: [Suit; 4],
     rank_order: [Rank; 13],
 ) -> Option<Vec<PlayedCard>> {
-
     let player = player_option.unwrap();
     // todo - sort
     let player_hand = player.get_hand();
@@ -39,9 +37,8 @@ pub fn get_move(
                 ));
             }
 
-            let pairs = find_pairs(
-                &player_hand,
-            );
+            let pairs = find_pairs(&player_hand);
+            let fct = find_fct(&player_hand);
 
             let first_pair = if pairs.len() > 0 {
                 Some(pairs.first().unwrap().to_vec())
@@ -49,9 +46,26 @@ pub fn get_move(
                 None
             };
 
+
+            let first_fct = if fct.len() > 0 {
+                Some(fct.first().unwrap().to_vec())
+            } else {
+                None
+            };
+
             let lowest_natural_card = get_lowest_natural_card(
                 &player_hand
             );
+
+            if first_fct != None {
+                if first_fct.iter().any(|t| {
+                    t.iter().any(|&p| {
+                        p == lowest_natural_card[0]
+                    })
+                }) {
+                    return first_fct.clone();
+                }
+            }
 
             if first_pair != None {
                 if first_pair.iter().any(|p| {
@@ -80,6 +94,20 @@ pub fn get_move(
                     suit_order,
                     rank_order
                 );
+
+            if played_single != None {
+                return played_single;
+            }
+
+
+            let played_single = 
+                get_lowest_natural_card_against_played(
+                    &player_hand,
+                    move_hand,
+                    suit_order,
+                    rank_order
+                );
+
             if played_single != None {
                 return played_single;
             }
@@ -118,83 +146,19 @@ pub fn get_move(
 
         },
         Hand::FiveCardTrick(_) => {
-            match move_hand {
-/*                Hand::FiveCardTrick(
-                    Trick{
-                        trick_type: TrickType::Straight,
-                        cards: _
-                    }
-                ) => {
-
-                    // todo - determine whether have a straight
-                    // compare highest cards and submit if win
-                    Some(vec![
-                        PlayedCard::new(
-                            Rank::Four, Suit::Spades, false
-                        ),
-                        PlayedCard::new(
-                            Rank::Five, Suit::Clubs, false
-                        ),
-                        PlayedCard::new(
-                            Rank::Six, Suit::Spades, false
-                        ),
-                        PlayedCard::new(
-                            Rank::Seven, Suit::Clubs, false
-                        ),
-                        PlayedCard::new(
-                            Rank::Eight, Suit::Spades, false
-                        ),
-                    ])
-                }, */
-                Hand::FiveCardTrick(
-                    Trick{
-                        trick_type: TrickType::Flush,
-                        cards: _
-                    }
-                ) => {
-                    let counts = get_suit_counts(
-                        player_hand.clone()
-                    );
-
-                    let mut flush_suit = None;
-
-                    for (r, count) in &counts {
-                        if *count >= 5 {
-                            flush_suit = Some(*r);
-                        }
-                    }
-
-                    if flush_suit == None {
-                        return get_pass();
-                    }
-
-                    let mut hand = vec!();
-                    for card in get_natural_cards(&player_hand) {
-                        if card.get_suit() == flush_suit 
-                            && hand.len() < 5 {
-                            hand.push(
-                                PlayedCard::new(
-                                    card.get_rank().unwrap(),
-                                    flush_suit.unwrap(),
-                                    false
-                                )
-                            );
-                        }
-                    }
-
-                    let built_hand = Hand::build(hand.clone()).unwrap();
-                    if compare_hands(
-                        move_hand,
-                        built_hand,
-                        suit_order,
-                        rank_order) {
-                        return Some(hand.clone());
-                    }
-
-                    get_pass()
-                },
-                _ => get_pass()
+            for trick in find_fct(&player_hand) {
+                let built_hand = Hand::build(
+                    trick.to_vec()
+                ).unwrap();
+                if compare_hands(
+                    move_hand,
+                    built_hand,
+                    suit_order,
+                    rank_order) {
+                    return Some(trick.to_vec());
+                }
             }
+            get_pass()
         },
     }
     
@@ -219,17 +183,6 @@ fn get_beating_multiple_card_hand(
     }
 
     None
-}
-
-fn get_suit_counts(cards: Vec<Card>) -> HashMap<Suit, usize> {
-    cards.iter()
-        .filter(|c| !c.get_rank().is_none())
-        .fold(HashMap::new(), |mut acc, &card| {
-            *acc.entry(
-                card.get_suit().unwrap()
-            ).or_insert(0) += 1;
-            acc
-        })
 }
 
 fn get_pass() -> Option<Vec<PlayedCard>>{
@@ -1058,7 +1011,6 @@ mod tests {
         );
     }
 
-/*
     #[test]
     fn it_can_beat_a_straight_with_another_straight() {
          let previous_move = Some(Hand::FiveCardTrick(Trick{
@@ -1109,7 +1061,7 @@ mod tests {
         );
     }
 
-/*
+
     #[test]
     fn it_passes_on_a_straight_when_it_cant_play() {
          let previous_move = Some(Hand::FiveCardTrick(Trick{
@@ -1142,8 +1094,62 @@ mod tests {
             ),
             Some(vec!())
         );
-
     }
-*/ */
 
+    #[test]
+    fn it_splits_a_pair_when_it_has_no_other_option() {
+        let previous_move = Some(Hand::Single(
+            PlayedCard::new(Rank::Queen, Suit::Clubs, false)
+        ));
+
+        let hand = vec!(
+            Card::Standard{rank: Rank::Jack, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{rank: Rank::Queen, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Queen, suit: Suit::Spades},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Queen, Suit::Spades, false),
+            ))
+        );
+    }
+
+    #[test]
+    fn it_can_open_with_a_straight() {
+        let previous_move = Some(Hand::Pass);
+
+        let hand = vec!(
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Four, suit: Suit::Hearts},
+            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Three, Suit::Clubs, false),
+                PlayedCard::new(Rank::Four, Suit::Hearts, false),
+                PlayedCard::new(Rank::Five, Suit::Clubs, false),
+                PlayedCard::new(Rank::Six, Suit::Spades, false),
+                PlayedCard::new(Rank::Seven, Suit::Spades, false),
+            ))
+        );
+    }
 }
