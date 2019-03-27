@@ -86,12 +86,10 @@ impl Game {
         self.round.get_last_move()
     }
 
-    pub fn get_ai_move(&self) -> Option<Vec<PlayedCard>> {
-        let player_id = self.get_next_player()
-            .expect("no next player!");
+    pub fn suggest_move(&self, id: &str) -> Option<Vec<PlayedCard>> {
         get_move(
             self.get_last_move(),
-            self.get_player(&player_id),
+            self.get_player(&id),
             self.round.get_suit_order(),
             self.round.get_rank_order(),
         )
