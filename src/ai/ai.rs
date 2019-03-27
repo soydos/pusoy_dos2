@@ -112,18 +112,17 @@ pub fn get_move(
                 return played_single;
             }
 
-            if player_hand.len() < 3 {
-                let jokers = get_jokers(&player_hand);
+            let jokers = get_jokers(&player_hand);
 
-                if jokers.len() > 0 {
-                    let player_hand = get_winning_joker(
-                        suit_order,
-                        rank_order,
-                        move_hand,
-                    );
-                    if player_hand != None {
-                        return player_hand;
-                    }
+            if jokers.len() > 0 {
+                let player_hand = get_winning_joker(
+                    suit_order,
+                    rank_order,
+                    move_hand,
+                );
+
+                if player_hand != None {
+                    return player_hand;
                 }
             }
 
@@ -1151,5 +1150,34 @@ mod tests {
                 PlayedCard::new(Rank::Seven, Suit::Spades, false),
             ))
         );
+    }
+
+    #[test]
+    fn it_plays_a_joker_when_it_has_no_other_choice() {
+        let previous_move = Some(Hand::Single(
+            PlayedCard::new(Rank::Ace, Suit::Spades, false)
+        ));
+
+        let hand = vec!(
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Four, suit: Suit::Hearts},
+            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
+            Card::Joker
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                DEFAULT_SUIT_ORDER,
+                DEFAULT_RANK_ORDER,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Two, Suit::Spades, true),
+            ))
+        );
+
     }
 }
