@@ -12,7 +12,7 @@ impl Deck {
         let mut cards = vec![];
 
         while cards.len() < number_of_jokers as usize {
-            cards.push(Card::Joker);
+            cards.push(Card::Joker { deck_id: 0 });
         }
 
         let mut deck_count = 0;
@@ -21,6 +21,7 @@ impl Deck {
             for suit in &suits {
                 for rank in &ranks {
                     let card = Card::Standard {
+                        deck_id: deck_count,
                         rank: rank.clone(),
                         suit: suit.clone(),
                     };

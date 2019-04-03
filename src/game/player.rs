@@ -85,15 +85,18 @@ mod tests {
     fn player_has_card() {
         let id = String::from("id1");
         let hand = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
 
         let three_clubs = Card::Standard {
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         };
         let four_clubs = Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         };
@@ -109,10 +112,12 @@ mod tests {
         let id = String::from("id1");
         let hand = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
@@ -125,6 +130,7 @@ mod tests {
         )];
 
         let remaining_hand = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Six,
             suit: Suit::Clubs,
         }];
@@ -140,10 +146,12 @@ mod tests {
         let id = String::from("id1");
         let hand = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
@@ -166,10 +174,12 @@ mod tests {
         let id = String::from("id1");
         let hand = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
@@ -182,6 +192,7 @@ mod tests {
         )];
 
         let remaining_hand = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Six,
             suit: Suit::Clubs,
         }];

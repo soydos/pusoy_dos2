@@ -123,6 +123,7 @@ mod tests {
 
         let next_player = game.get_next_player().unwrap();
         let three_clubs = Card::Standard {
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         };
@@ -163,16 +164,19 @@ mod tests {
     fn game_returns_winners() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
@@ -219,20 +223,24 @@ mod tests {
     fn player_only_wins_when_it_is_out_of_cards() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
@@ -276,16 +284,19 @@ mod tests {
     fn player_ids_only_appear_in_the_winners_list_once() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
@@ -325,16 +336,19 @@ mod tests {
     fn winners_list_contains_order_of_winners() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },

@@ -180,6 +180,7 @@ impl Round {
 
     fn get_starting_player(&self) -> Option<String> {
         let lowest_card = Card::Standard {
+            deck_id: 0,
             suit: self.suit_order[0],
             rank: self.rank_order[0],
         };
@@ -333,10 +334,12 @@ mod tests {
     #[test]
     fn when_game_hasnt_started_player_with_3clubs_starts() {
         let a_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -361,10 +364,12 @@ mod tests {
     #[test]
     fn when_game_has_started_there_will_be_a_current_player() {
         let a_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -387,10 +392,12 @@ mod tests {
     #[test]
     fn player_cannot_start_a_game_with_a_pass() {
         let a_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -416,15 +423,18 @@ mod tests {
     fn player_must_start_a_game_with_three_clubs() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -455,15 +465,18 @@ mod tests {
     fn playing_a_valid_hand_returns_the_new_round() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -489,15 +502,18 @@ mod tests {
     fn lower_hand_cannot_beat_last_move() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -530,15 +546,18 @@ mod tests {
     fn higher_hand_can_beat_last_move() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -570,15 +589,18 @@ mod tests {
     fn invalid_player_cannot_make_a_move() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -612,15 +634,18 @@ mod tests {
     fn it_should_be_a_valid_hand() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -655,15 +680,18 @@ mod tests {
     fn it_should_be_a_valid_hand_even_at_start() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -693,15 +721,18 @@ mod tests {
     fn player_cannot_play_cards_it_doesnt_hold() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -737,15 +768,18 @@ mod tests {
     fn player_can_only_play_a_card_once() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -791,15 +825,18 @@ mod tests {
     fn playing_a_valid_card_removes_from_players_hand() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -831,15 +868,18 @@ mod tests {
     fn a_valid_move_is_set_as_last_move() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -874,15 +914,18 @@ mod tests {
     fn when_a_valid_move_is_made_the_next_player_rotates() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -916,20 +959,24 @@ mod tests {
     fn player_rotation_comes_back_round() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             }
@@ -964,30 +1011,36 @@ mod tests {
     fn passing_moves_without_changing_the_last_move() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             }
         ];
         let c_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             }
@@ -1040,34 +1093,41 @@ mod tests {
     fn a_valid_move_switches_the_last_player() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Spades,
             }
         ];
         let c_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             }
@@ -1126,34 +1186,41 @@ mod tests {
     fn if_last_and_next_player_are_same_the_table_is_cleared() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Spades,
             }
         ];
         let c_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Six,
                 suit: Suit::Clubs,
             }
@@ -1202,15 +1269,18 @@ mod tests {
     fn any_card_beats_a_pass() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![Card::Standard {
+            deck_id: 0,
             rank: Rank::Four,
             suit: Suit::Clubs,
         }];
@@ -1246,16 +1316,19 @@ mod tests {
     fn players_with_no_cards_are_skipped() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![];
         let c_cards = vec![Card::Standard{
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
@@ -1307,16 +1380,19 @@ mod tests {
     fn once_the_game_is_over_the_next_player_is_none() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Spades,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![];
         let c_cards = vec![Card::Standard{
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
@@ -1379,16 +1455,19 @@ mod tests {
     fn when_player_wins_next_player_starts() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![];
         let c_cards = vec![Card::Standard{
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
@@ -1440,16 +1519,19 @@ mod tests {
     fn playing_on_pass_sets_player_as_last_move() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![];
         let c_cards = vec![Card::Standard{
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
@@ -1492,10 +1574,12 @@ mod tests {
     fn when_there_are_two_players_left_pass_clears_the_table() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             }
@@ -1504,6 +1588,7 @@ mod tests {
         let c_cards = vec![];
         let d_cards = vec![
              Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
@@ -1562,33 +1647,40 @@ mod tests {
     fn when_reversals_are_enabled_4ofakind_reverses_orders() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
         ];
         let c_cards = vec![Card::Standard{
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
@@ -1642,33 +1734,40 @@ mod tests {
     fn when_reversals_are_enabled_only_a_4or5ofakind_reverses() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
         ];
         let c_cards = vec![Card::Standard{
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];
@@ -1720,33 +1819,40 @@ mod tests {
     fn when_reversals_are_not_enabled_no_reversals() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
         ];
         let c_cards = vec![Card::Standard{
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         }];

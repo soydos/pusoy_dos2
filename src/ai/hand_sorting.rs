@@ -242,8 +242,8 @@ mod tests {
     #[test]
     fn it_can_find_pairs_in_a_hand() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs} 
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs} 
         ];
 
         assert_eq!(find_pairs(&hand).len(), 1);
@@ -256,10 +256,10 @@ mod tests {
     #[test]
     fn it_gets_all_the_pairs() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
 
         ];
 
@@ -269,9 +269,9 @@ mod tests {
     #[test]
     fn it_can_find_prials() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs} 
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs} 
         ];
 
         assert_eq!(find_prials(&hand).len(), 1);
@@ -285,11 +285,11 @@ mod tests {
     #[test]
     fn it_can_find_a_straight() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Five, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Clubs},
         ];
 
         assert_eq!(find_fct(&hand).len(), 1);
@@ -298,11 +298,11 @@ mod tests {
     #[test]
     fn it_returns_an_empty_vector_when_there_is_no_tricks() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Five, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Ten, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Ten, suit: Suit::Clubs},
         ];
 
         assert_eq!(find_fct(&hand).len(), 0);
@@ -311,11 +311,11 @@ mod tests {
     #[test]
     fn it_can_find_a_flush() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Ten, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Ten, suit: Suit::Clubs},
         ];
 
         assert_eq!(find_fct(&hand).len(), 1);
@@ -324,11 +324,11 @@ mod tests {
     #[test]
     fn it_can_find_full_houses() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Three, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Diamonds},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Diamonds},
         ];
 
         assert_eq!(find_fct(&hand).len(), 1);
@@ -337,11 +337,11 @@ mod tests {
     #[test]
     fn it_can_find_four_of_a_kind() {
         let hand = vec![
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Three, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Diamonds},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Diamonds},
         ];
         assert_eq!(find_fct(&hand).len(), 1);
     }
