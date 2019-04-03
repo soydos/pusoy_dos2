@@ -11,6 +11,10 @@ pub fn compare_hands(
     let last_cards = last_move.to_cards();
     let new_cards = new_hand.to_cards();
 
+    if last_cards.len() != new_cards.len() {
+        return false;
+    }
+
     match last_move {
         Hand::Single(_) | Hand::Pair(_, _) | Hand::Prial(_, _, _) => {
             let last_card = get_top_card(last_cards, suit_order, rank_order);
@@ -690,5 +694,27 @@ mod tests {
                 PlayedCard::new(Rank::Five, Suit::Clubs, false),
             ]
         );
+    }
+
+    #[test]
+    fn when_not_a_pass_hands_should_have_same_number_of_cards() {
+        let hand1_cards = [
+            PlayedCard::new(Rank::Three, Suit::Spades, false),
+            PlayedCard::new(Rank::Four, Suit::Spades, false),
+            PlayedCard::new(Rank::Five, Suit::Spades, false),
+            PlayedCard::new(Rank::Six, Suit::Spades, false),
+            PlayedCard::new(Rank::Seven, Suit::Spades, false),
+        ];
+        let hand1 = build_fct!(StraightFlush, hand1_cards).unwrap();
+        let hand2 = Hand::Single(
+            PlayedCard::new(Rank::Three, Suit::Clubs, false)
+        );
+
+        assert!(!compare_hands(
+            hand1,
+            hand2,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+        ));
     }
 }
