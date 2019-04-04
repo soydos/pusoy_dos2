@@ -1,5 +1,5 @@
 use super::{Hand, TrickType};
-use crate::cards::{PlayedCard, Rank, Suit};
+use crate::cards::{Card, PlayedCard, Rank, Suit};
 use std::cmp::Ordering;
 
 pub fn compare_hands(
@@ -37,6 +37,30 @@ pub fn sort_played_cards(
         |&a, &b| compare_single(a, b, suit_order, rank_order)
     );
     sortable_cards
+}
+
+pub fn sort_unplayed_cards(
+    hand: &Vec<Card>,
+    suit_order: [Suit; 4],
+    rank_order: [Rank; 13]
+) -> Vec<Card> {
+    let played_cards = hand.iter().map(|c| {
+        match c {
+            Card::Joker => PlayedCard::new(
+                rank_order[12], suit_order[3], true
+            ),
+            Card::Standard{rank, suit} => PlayedCard::new(
+                *rank, *suit, false
+            )
+        }
+    }).collect();
+    let played_cards = sort_played_cards(
+        &played_cards,
+        suit_order,
+        rank_order
+    );
+
+    played_cards.iter().map(|c| c.to_card()).collect()
 }
 
 fn compare_single(
