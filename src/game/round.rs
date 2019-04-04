@@ -1900,5 +1900,59 @@ mod tests {
         );
     }
 
+    #[test]
+    fn deck_id_is_not_checked_when_move_played() {
+        let a_cards = vec![
+            Card::Standard {
+                deck_id: 1,
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![Card::Standard{
+            deck_id: 0,
+            rank: Rank::Three,
+            suit: Suit::Clubs,
+        }];
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let last_move = Some(Hand::Pass);
+
+        let round = Round::new(
+            players,
+            Some("a".to_string()),
+            last_move,
+            Some("b".to_string()),
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+            false
+        );
+
+        let played_hand = vec![
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+        ];
+
+        let new_round = round.submit_move(
+            "a",
+            played_hand
+        );
+
+        assert!(new_round.is_ok());
+    }
 
 }

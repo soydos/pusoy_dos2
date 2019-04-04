@@ -35,7 +35,14 @@ impl Player {
 
     pub fn play_move(&mut self, cards: Vec<PlayedCard>) -> Result<Player, PlayerError> {
         for card in cards.iter() {
-            match self.hand.iter().position(|&c| c == card.to_card()) {
+            match self.hand.iter()
+                .position(|&c| {
+                    let played_card = card.to_card();
+
+                    c.get_rank() == played_card.get_rank() &&
+                        c.get_suit() == played_card.get_suit()
+                }) {
+
                 Some(index) => self.hand.remove(index),
                 _ => return Err(PlayerError::PlayerDoesntHaveCard),
             };
@@ -202,5 +209,35 @@ mod tests {
         let new_player = player.play_move(played_hand).unwrap();
 
         assert_eq!(new_player.get_hand(), remaining_hand);
+    }
+
+    #[test]
+    fn cards_from_any_deck_can_be_played() {
+        let id = String::from("id1");
+        let hand = vec![
+            Card::Standard {
+                deck_id: 1,
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Six,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        let played_hand = vec![PlayedCard::new(
+            Rank::Three,
+            Suit::Clubs,
+            false
+        )];
+
+        let mut player = Player::new(id, hand);
+
+        let new_player = player.play_move(played_hand);
+
+        assert!(new_player.is_ok());
+
     }
 }
