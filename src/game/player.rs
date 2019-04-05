@@ -15,9 +15,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(id: String, unsorted_hand: Vec<Card>) -> Player {
-        let mut hand = unsorted_hand.clone();
-        hand.sort();
+    pub fn new(id: String, hand: Vec<Card>) -> Player {
         Player { id, hand }
     }
 

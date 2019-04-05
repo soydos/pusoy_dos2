@@ -327,11 +327,11 @@ fn convert_to_played(
     hand.iter().map(|&c| {
         match c {
             Card::Standard{
-                deck_id, rank, suit
+                deck_id: _, rank, suit
             } => {
                 PlayedCard::new(rank, suit, false)
             },
-            Card::Joker{deck_id} => PlayedCard::new(
+            Card::Joker{deck_id: _} => PlayedCard::new(
                 rank_order[0],
                 suit_order[0],
                 true
@@ -1221,9 +1221,9 @@ mod tests {
         let previous_move = Some(Hand::Pass);
 
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
