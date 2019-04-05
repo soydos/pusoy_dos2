@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
 pub enum Card {
-    Joker,
-    Standard { rank: Rank, suit: Suit },
+    Joker { deck_id: u8 },
+    Standard { deck_id: u8, rank: Rank, suit: Suit },
 }
 
 impl Card {
@@ -24,6 +24,7 @@ impl Card {
         }
     }
 }
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -56,9 +57,10 @@ impl PlayedCard {
 
     pub fn to_card(&self) -> Card {
         if self.is_joker {
-            Card::Joker
+            Card::Joker { deck_id: 0 }
         } else {
             Card::Standard {
+                deck_id: 0,
                 rank: self.rank,
                 suit: self.suit,
             }
@@ -73,6 +75,7 @@ mod tests {
     #[test]
     fn card_has_rank_and_suit() {
         let ace_of_spades = Card::Standard {
+            deck_id: 0,
             rank: Rank::Ace,
             suit: Suit::Spades,
         };
@@ -92,10 +95,11 @@ mod tests {
     #[test]
     fn played_card_to_card() {
         let ace_of_spades = Card::Standard {
+            deck_id: 0,
             rank: Rank::Ace,
             suit: Suit::Spades,
         };
-        let joker = Card::Joker;
+        let joker = Card::Joker { deck_id: 0 };
 
         let played_ace_of_spades = PlayedCard::new(Rank::Ace, Suit::Spades, false);
         let played_joker = PlayedCard::new(Rank::Ace, Suit::Spades, true);

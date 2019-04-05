@@ -327,11 +327,11 @@ fn convert_to_played(
     hand.iter().map(|&c| {
         match c {
             Card::Standard{
-                rank, suit
+                deck_id: _, rank, suit
             } => {
                 PlayedCard::new(rank, suit, false)
             },
-            Card::Joker => PlayedCard::new(
+            Card::Joker{deck_id: _} => PlayedCard::new(
                 rank_order[0],
                 suit_order[0],
                 true
@@ -368,7 +368,7 @@ mod tests {
     #[test]
     fn ai_plays_lowest_card_at_start_of_game() {
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs}
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs}
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -393,8 +393,8 @@ mod tests {
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs}
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -417,8 +417,8 @@ mod tests {
     fn ai_plays_lowest_single_on_a_pass() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs}
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -441,9 +441,9 @@ mod tests {
     fn ai_plays_lowest_real_single_on_a_pass() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Joker,
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs}
+            Card::Joker{deck_id: 0},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs}
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -468,8 +468,8 @@ mod tests {
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Joker,
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Joker{deck_id: 0},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -494,8 +494,8 @@ mod tests {
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -518,8 +518,8 @@ mod tests {
             PlayedCard::new(Rank::Three, Suit::Clubs, false),
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Spades},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -548,8 +548,8 @@ mod tests {
             PlayedCard::new(Rank::Three, Suit::Clubs, false),
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Spades},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -571,8 +571,8 @@ mod tests {
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -602,9 +602,9 @@ mod tests {
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -638,8 +638,8 @@ mod tests {
             PlayedCard::new(Rank::Three, Suit::Clubs, false),
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Spades},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -662,12 +662,12 @@ mod tests {
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
         ));
         let hand = vec!(
-            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
 
         );
         let player = Player::new("cpu".to_string(), hand);
@@ -708,11 +708,11 @@ mod tests {
             ]
         }));
         let hand = vec!(
-            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Eight, suit: Suit::Spades},
 
         );
         let player = Player::new("cpu".to_string(), hand);
@@ -757,12 +757,12 @@ mod tests {
             ]
         }));
         let hand = vec!(
-            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Eight, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Eight, suit: Suit::Spades},
 
         );
         let player = Player::new("cpu".to_string(), hand);
@@ -808,11 +808,11 @@ mod tests {
             ]
         }));
         let hand = vec!(
-            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Clubs},
 
         );
         let player = Player::new("cpu".to_string(), hand);
@@ -833,7 +833,7 @@ mod tests {
     fn if_ai_has_a_joker_left_on_an_empty_table_it_will_play() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Joker
+            Card::Joker{deck_id: 0}
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -854,8 +854,8 @@ mod tests {
     fn if_ai_only_has_jokers_left_it_will_play_them() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Joker,
-            Card::Joker,
+            Card::Joker{deck_id: 0},
+            Card::Joker{deck_id: 0},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -877,10 +877,10 @@ mod tests {
     fn if_ai_only_has_4_jokers_left_it_will_play_one() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Joker,
-            Card::Joker,
-            Card::Joker,
-            Card::Joker,
+            Card::Joker{deck_id: 0},
+            Card::Joker{deck_id: 0},
+            Card::Joker{deck_id: 0},
+            Card::Joker{deck_id: 0},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -902,9 +902,9 @@ mod tests {
     fn ai_will_lead_with_low_pair_if_possible() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Ace, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Ace, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -926,9 +926,9 @@ mod tests {
     fn ai_will_not_lead_with_pair_if_lower_single() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Ace, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Ace, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Ace, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Ace, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -949,10 +949,10 @@ mod tests {
     fn ai_will_lead_with_pair_if_possible() {
         let previous_move = Some(Hand::Pass);
         let hand = vec!(
-            Card::Standard{rank: Rank::Jack, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Queen, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::King, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Jack, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Queen, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::King, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -977,10 +977,10 @@ mod tests {
         ));
 
         let hand = vec!(
-            Card::Standard{rank: Rank::Jack, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Queen, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::King, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Jack, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Queen, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::King, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -1001,11 +1001,11 @@ mod tests {
     fn ai_could_open_on_a_pair() {
         let previous_move = None;
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Three, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Queen, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::King, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Queen, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::King, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -1036,12 +1036,12 @@ mod tests {
             ]
         }));
         let hand = vec!(
-            Card::Standard{rank: Rank::Four, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Eight, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Eight, suit: Suit::Spades},
 
         );
         let player = Player::new("cpu".to_string(), hand);
@@ -1087,12 +1087,12 @@ mod tests {
             ]
         }));
         let hand = vec!(
-            Card::Standard{rank: Rank::Four, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Ten, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Ten, suit: Suit::Spades},
 
         );
         let player = Player::new("cpu".to_string(), hand);
@@ -1115,10 +1115,10 @@ mod tests {
         ));
 
         let hand = vec!(
-            Card::Standard{rank: Rank::Jack, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Jack, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Queen, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Queen, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Jack, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Jack, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Queen, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Queen, suit: Suit::Spades},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -1140,11 +1140,11 @@ mod tests {
         let previous_move = Some(Hand::Pass);
 
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{rank: Rank::Seven, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -1172,11 +1172,11 @@ mod tests {
         ));
 
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Hearts},
-            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Six, suit: Suit::Spades},
-            Card::Joker
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Hearts},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
+            Card::Joker{deck_id:0}
         );
         let player = Player::new("cpu".to_string(), hand);
 
@@ -1221,9 +1221,9 @@ mod tests {
         let previous_move = Some(Hand::Pass);
 
         let hand = vec!(
-            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
-            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{deck_id: 0, rank: Rank::Five, suit: Suit::Clubs},
         );
         let player = Player::new("cpu".to_string(), hand);
 

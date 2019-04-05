@@ -1,4 +1,4 @@
-use super::{Player, Round, SubmitError, Hand};
+use super::{Player, Round, SubmitError, Hand, sort_unplayed_cards};
 use crate::cards::{
     get_rank_array,
     get_suit_array,
@@ -25,6 +25,10 @@ impl Game {
         player_ids: &[String],
         reversals_enabled: bool,
     ) -> Game {
+        // todo - set when game is setup
+        let suit_order = get_suit_array();
+        let rank_order = get_rank_array();
+
         let mut deck = Deck::new(num_decks, num_jokers);
         deck.shuffle();
         let cards = deck.deal(player_ids.len() as u8);
@@ -32,7 +36,17 @@ impl Game {
         let players: Vec<Player> = cards
             .iter()
             .zip(player_ids)
-            .map(|(c, id)| Player::new(id.to_string(), c.clone()))
+            .map(|(c, id)| {
+                let mut player_hand = sort_unplayed_cards(
+                    &c, suit_order, rank_order
+                );
+                player_hand.reverse();
+
+                Player::new(
+                    id.to_string(),
+                    player_hand
+                )
+            })
             .collect();
 
         let round = Round::new(
@@ -40,8 +54,8 @@ impl Game {
             None,
             None,
             None,
-            get_suit_array(), // todo - set when game is setup
-            get_rank_array(),
+            suit_order,
+            rank_order,
             reversals_enabled
         );
 
@@ -123,6 +137,7 @@ mod tests {
 
         let next_player = game.get_next_player().unwrap();
         let three_clubs = Card::Standard {
+            deck_id: 0,
             rank: Rank::Three,
             suit: Suit::Clubs,
         };
@@ -163,16 +178,19 @@ mod tests {
     fn game_returns_winners() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
@@ -219,20 +237,24 @@ mod tests {
     fn player_only_wins_when_it_is_out_of_cards() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
@@ -276,16 +298,19 @@ mod tests {
     fn player_ids_only_appear_in_the_winners_list_once() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },
@@ -325,16 +350,19 @@ mod tests {
     fn winners_list_contains_order_of_winners() {
         let a_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             },
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Four,
                 suit: Suit::Clubs,
             }
         ];
         let b_cards = vec![
             Card::Standard {
+                deck_id: 0,
                 rank: Rank::Three,
                 suit: Suit::Clubs,
             },

@@ -31,7 +31,6 @@ pub fn sort_played_cards(
     suit_order: [Suit; 4],
     rank_order: [Rank; 13]
 ) -> Vec<PlayedCard> {
-
     let mut sortable_cards = hand.clone();
     sortable_cards.sort_by(
         |&a, &b| compare_single(a, b, suit_order, rank_order)
@@ -44,23 +43,11 @@ pub fn sort_unplayed_cards(
     suit_order: [Suit; 4],
     rank_order: [Rank; 13]
 ) -> Vec<Card> {
-    let played_cards = hand.iter().map(|c| {
-        match c {
-            Card::Joker => PlayedCard::new(
-                rank_order[12], suit_order[3], true
-            ),
-            Card::Standard{rank, suit} => PlayedCard::new(
-                *rank, *suit, false
-            )
-        }
-    }).collect();
-    let played_cards = sort_played_cards(
-        &played_cards,
-        suit_order,
-        rank_order
+    let mut sortable_cards = hand.clone();
+    sortable_cards.sort_by(
+        |&a, &b| compare_single_unplayed(a, b, suit_order, rank_order)
     );
-
-    played_cards.iter().map(|c| c.to_card()).collect()
+    sortable_cards
 }
 
 fn compare_single(
@@ -75,6 +62,21 @@ fn compare_single(
         Ordering::Equal => compare_suits(last_card, new_card, suit_order),
         x => x,
     }
+}
+
+fn compare_single_unplayed(
+    last_card: Card,
+    new_card: Card,
+    suit_order: [Suit; 4],
+    rank_order: [Rank; 13],
+) -> Ordering {
+    let rank_comparison = compare_rank_unplayed(last_card, new_card, rank_order);
+
+    match rank_comparison {
+        Ordering::Equal => compare_suits_unplayed(last_card, new_card, suit_order),
+        x => x,
+    }
+
 }
 
 pub fn compare_five_cards(
@@ -187,6 +189,44 @@ fn get_suit_index(card: PlayedCard, suit_order: [Suit; 4]) -> Option<usize> {
 
 fn get_rank_index(card: PlayedCard, rank_order: [Rank; 13]) -> Option<usize> {
     rank_order.iter().position(|&x| x == card.get_rank())
+}
+
+fn compare_suits_unplayed(card1: Card, card2: Card, suit_order: [Suit; 4]) -> Ordering {
+    let c1_i = get_suit_index_unplayed(card1, suit_order);
+    let c2_i = get_suit_index_unplayed(card2, suit_order);
+
+    c2_i.cmp(&c1_i)
+}
+
+fn compare_rank_unplayed(card1: Card, card2: Card, rank_order: [Rank; 13]) -> Ordering {
+    let mut c1_i:u8 = get_rank_index_unplayed(card1, rank_order)
+        .expect("unable to find rank index") as u8;
+    let mut c2_i:u8 = get_rank_index_unplayed(card2, rank_order)
+        .expect("unable to find rank index") as u8;
+
+    match card1 {
+        Card::Joker{ deck_id: _ } => c1_i += 1,
+        _ => (),
+    }
+
+    match card2 {
+        Card::Joker{ deck_id: _ } => c2_i += 1,
+        _ => (),
+    }
+
+    c2_i.cmp(&c1_i)
+}
+
+fn get_suit_index_unplayed(card: Card, suit_order: [Suit; 4]) -> Option<usize> {
+    suit_order.iter().position(|&x| 
+        x == card.get_suit().unwrap_or(suit_order[3])
+    )
+}
+
+fn get_rank_index_unplayed(card: Card, rank_order: [Rank; 13]) -> Option<usize> {
+    rank_order.iter().position(|&x|
+        x == card.get_rank().unwrap_or(rank_order[12])
+    )
 }
 
 #[cfg(test)]
