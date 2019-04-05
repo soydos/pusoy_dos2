@@ -1,4 +1,9 @@
-use crate::game::{Hand, Player, compare_hands};
+use crate::game::{
+    Hand,
+    Player,
+    compare_hands,
+    sort_unplayed_cards
+};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use super::{find_pairs, get_sets_of_same_rank, find_fct};
 
@@ -10,7 +15,15 @@ pub fn get_move(
 ) -> Option<Vec<PlayedCard>> {
     let player = player_option.unwrap();
     // todo - sort
-    let player_hand = player.get_hand();
+    let unsorted_player_hand = player.get_hand();
+    let mut sorted_player_hand = sort_unplayed_cards(
+        &unsorted_player_hand,
+        suit_order,
+        rank_order
+    );
+
+    sorted_player_hand.reverse();
+    let player_hand = sorted_player_hand;
 
     if last_move == None {
         return Some(get_all_low_cards(&player_hand))
@@ -1176,6 +1189,53 @@ mod tests {
             ),
             Some(vec!(
                 PlayedCard::new(Rank::Two, Suit::Spades, true),
+            ))
+        );
+    }
+
+    #[test]
+    fn it_respects_alternative_suit_rank_orders() {
+        let alternative_suit_order = [
+            Suit::Clubs,
+            Suit::Hearts,
+            Suit::Diamonds,
+            Suit::Spades
+        ];
+
+        let alternative_rank_order = [
+            Rank::Two,
+            Rank::Ace,
+            Rank::King,
+            Rank::Queen,
+            Rank::Jack,
+            Rank::Ten,
+            Rank::Nine,
+            Rank::Eight,
+            Rank::Seven,
+            Rank::Six,
+            Rank::Five,
+            Rank::Four,
+            Rank::Three,
+        ];
+
+        let previous_move = Some(Hand::Pass);
+
+        let hand = vec!(
+            Card::Standard{rank: Rank::Three, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Four, suit: Suit::Clubs},
+            Card::Standard{rank: Rank::Five, suit: Suit::Clubs},
+        );
+        let player = Player::new("cpu".to_string(), hand);
+
+        assert_eq!(
+            get_move(
+                previous_move,
+                Some(player),
+                alternative_suit_order,
+                alternative_rank_order,
+            ),
+            Some(vec!(
+                PlayedCard::new(Rank::Five, Suit::Clubs, false),
             ))
         );
 
