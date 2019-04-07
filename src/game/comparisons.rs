@@ -5,7 +5,7 @@ use std::cmp::Ordering;
 pub fn compare_hands(
     last_move: Hand,
     new_hand: Hand,
-    _suits_for_flushes: FlushPrecedence,
+    flush_precedence: FlushPrecedence,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13],
 ) -> bool {
@@ -17,12 +17,26 @@ pub fn compare_hands(
     }
 
     match last_move {
-        Hand::Single(_) | Hand::Pair(_, _) | Hand::Prial(_, _, _) => {
-            let last_card = get_top_card(last_cards, suit_order, rank_order);
-            let new_card = get_top_card(new_cards, suit_order, rank_order);
-            compare_single(last_card, new_card, suit_order, rank_order) == Ordering::Greater
+        Hand::Single(_)
+        | Hand::Pair(_, _)
+        | Hand::Prial(_, _, _) => {
+            let last_card = get_top_card(
+                last_cards, suit_order, rank_order
+            );
+            let new_card = get_top_card(
+                new_cards, suit_order, rank_order
+            );
+            compare_single(
+                last_card, new_card, suit_order, rank_order
+            ) == Ordering::Greater
         }
-        Hand::FiveCardTrick(_) => compare_five_cards(last_move, new_hand, suit_order, rank_order),
+        Hand::FiveCardTrick(_) => compare_five_cards(
+            last_move,
+            new_hand,
+            suit_order,
+            rank_order,
+            flush_precedence
+        ),
         _ => false,
     }
 }
@@ -85,6 +99,7 @@ pub fn compare_five_cards(
     new_hand: Hand,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13],
+    flush_precedence: FlushPrecedence,
 ) -> bool {
     let last_trick = match last_move {
         Hand::FiveCardTrick(x) => x,
@@ -106,13 +121,18 @@ pub fn compare_five_cards(
     let last_cards = last_move.to_cards();
     let new_cards = new_hand.to_cards();
 
-    let (last_card, new_card) = match last_trick.trick_type {
+    let comparison_result = match last_trick.trick_type {
         TrickType::Straight
         | TrickType::FiveOfAKind => {
-            let last_card = get_top_card(last_cards, suit_order, rank_order);
-            let new_card = get_top_card(new_cards, suit_order, rank_order);
-
-            (last_card, new_card)
+            let last_card = get_top_card(
+                last_cards, suit_order, rank_order
+            );
+            let new_card = get_top_card(
+                new_cards, suit_order, rank_order
+            );
+            compare_single(
+                last_card, new_card, suit_order, rank_order
+            )
         },
         TrickType::Flush
         | TrickType::StraightFlush => {
@@ -123,26 +143,22 @@ pub fn compare_five_cards(
                 new_cards, suit_order, rank_order
             );
 
-/*
-            let last_suit = get_suit_index(last_card, suit_order);
-            let new_card = get_suit_index(new_card, suit_order);
+            if flush_precedence == FlushPrecedence::Suit {
+                let rank_comparison = compare_suits(
+                    last_card, new_card, suit_order
+                );
 
-            let rank_comparison = compare_suits(
-                last_card, new_card, suit_order
-            );
-*/
-
-
-/*
-            match rank_comparison {
-                Ordering::Equal => compare_rank(
-                    last_card, new_card, rank_order
-                ),
-                x => x,
+                match rank_comparison {
+                    Ordering::Equal => compare_rank(
+                        last_card, new_card, rank_order
+                    ),
+                    x => x,
+                }
+            } else {
+                compare_single(
+                    last_card, new_card, suit_order, rank_order
+                )
             }
-*/
-
-            (last_card, new_card)
 
         },
         TrickType::FullHouse | TrickType::FourOfAKind => {
@@ -152,15 +168,20 @@ pub fn compare_five_cards(
                 4
             };
 
-            let last_card = get_top_of_n(last_cards, set_count, suit_order, rank_order);
+            let last_card = get_top_of_n(
+                last_cards, set_count, suit_order, rank_order
+            );
+            let new_card = get_top_of_n(
+                new_cards, set_count, suit_order, rank_order
+            );
 
-            let new_card = get_top_of_n(new_cards, set_count, suit_order, rank_order);
-
-            (last_card, new_card)
+            compare_single(
+                last_card, new_card, suit_order, rank_order
+            )
         }
     };
 
-    compare_single(last_card, new_card, suit_order, rank_order) == Ordering::Greater
+    comparison_result == Ordering::Greater
 }
 
 fn get_top_card(
@@ -844,7 +865,6 @@ mod tests {
         ];
 
         let hand2_cards = [
-
             PlayedCard::new(Rank::Three, Suit::Clubs, false),
             PlayedCard::new(Rank::Two, Suit::Clubs, false),
             PlayedCard::new(Rank::Ace, Suit::Clubs, false),
@@ -857,7 +877,7 @@ mod tests {
         assert!(!compare_hands(
             hand1,
             hand2,
-            FlushPrecedence::Rank,
+            FlushPrecedence::Suit,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));

@@ -716,11 +716,21 @@ mod tests {
             ]
         }));
         let hand = vec!(
-            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
-            Card::Standard{deck_id: 0, rank: Rank::Seven, suit: Suit::Spades},
-            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{deck_id: 0, rank: Rank::Six, suit: Suit::Spades},
-            Card::Standard{deck_id: 0, rank: Rank::Eight, suit: Suit::Spades},
+            Card::Standard{
+                deck_id: 0, rank: Rank::Seven, suit: Suit::Spades
+            },
+            Card::Standard{
+                deck_id: 0, rank: Rank::Seven, suit: Suit::Spades
+            },
+            Card::Standard{
+                deck_id: 0, rank: Rank::Six, suit: Suit::Spades
+            },
+            Card::Standard{
+                deck_id: 0, rank: Rank::Six, suit: Suit::Spades
+            },
+            Card::Standard{
+                deck_id: 0, rank: Rank::Eight, suit: Suit::Spades
+            },
 
         );
         let player = Player::new("cpu".to_string(), hand);
