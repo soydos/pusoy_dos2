@@ -1,4 +1,11 @@
-use super::{compare_hands, Hand, Player, Trick, TrickType};
+use super::{
+    compare_hands,
+    Hand,
+    Player,
+    Trick,
+    TrickType,
+    FlushPrecedence
+};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use serde::Serialize;
 
@@ -164,12 +171,12 @@ impl Round {
 
     fn check_starting_move(
         &self,
-        cards:&Vec<PlayedCard>) -> Option<SubmitError> {
-            if cards.len() == 0 {
+        cards:&[PlayedCard]) -> Option<SubmitError> {
+            if cards.is_empty() {
                 return Some(SubmitError::FirstRoundPass);
             }
 
-            if !self.contains_lowest_card(cards.clone()) {
+            if !self.contains_lowest_card(cards.to_vec()) {
                 return Some(
                     SubmitError::FirstHandMustContainLowestCard
                 );
@@ -185,7 +192,7 @@ impl Round {
             rank: self.rank_order[0],
         };
         for player in self.players.iter() {
-            if player.has_card(&lowest_card) {
+            if player.has_card(lowest_card) {
                 return Some(player.get_id().to_string());
             }
         }
@@ -209,6 +216,7 @@ impl Round {
             self.last_move
                 .expect("cannot compare when no last_move"),
             cards,
+            FlushPrecedence::Rank,
             self.suit_order,
             self.rank_order,
         )
@@ -230,22 +238,20 @@ impl Round {
             return self.players.first()
                 .unwrap().get_id().to_string();
         }
-        let mut i = 0;
         let mut index = 0;
-        for player in &self.players {
-            i = i + 1; 
+        for (i, player) in self.players.iter().enumerate() {
             if player.get_id() == user_id {
-                index = i;
+                index = i + 1;
             }
         }
 
-        self.players.get(index).unwrap().get_id().to_string()
+        self.players[index].get_id().to_string()
     }
 
-    fn get_players_still_in(&self, players: &Vec<Player>) -> Vec<Player> {
+    fn get_players_still_in(&self, players: &[Player]) -> Vec<Player> {
         players.iter()
-            .filter(|p| p.get_hand().len() > 0)
-            .map(|p| p.clone())
+            .filter(|p| !p.get_hand().is_empty())
+            .cloned()
             .collect()
     }
 
@@ -265,16 +271,16 @@ impl Round {
         }
 
         if next_player == new_last_player.clone()
-            .unwrap_or("invalid_player".to_string()) {
+            .unwrap_or_else(|| "invalid_player".to_string()) {
             new_last_move = Some(Hand::Pass);
         }
 
         while self.get_player(&next_player)
-            .unwrap().get_hand().len() < 1 {
+            .unwrap().get_hand().is_empty() {
 
             next_player = self.get_next_player_in_rotation(&next_player);
             if next_player == new_last_player.clone()
-                .unwrap_or("invalid_player".to_string()) {
+                .unwrap_or_else(|| "invalid_player".to_string()) {
                 new_last_move = Some(Hand::Pass);
             }
         }
@@ -290,16 +296,13 @@ impl Round {
         let mut rank_order = self.rank_order;
 
         if self.reversals_enabled {
-            match hand.unwrap_or(Hand::Pass) {
-                Hand::FiveCardTrick(Trick{
+            if let Hand::FiveCardTrick(Trick{
                     trick_type: TrickType::FourOfAKind,
-                    cards: _
-                }) => {
-                    suit_order.reverse();
-                    rank_order.reverse();
-                }, 
-                _ => ()
-            }
+                    ..
+                }) = hand.unwrap_or(Hand::Pass) {
+                suit_order.reverse();
+                rank_order.reverse();
+            } 
         }
 
         (suit_order, rank_order)
@@ -1636,6 +1639,11 @@ mod tests {
             "a",
             played_hand
         ).unwrap();
+
+        assert_eq!(
+            new_round.get_next_player().unwrap(),
+            "d".to_string()
+        );
 
         assert_eq!(
             new_round.get_last_move().unwrap(),

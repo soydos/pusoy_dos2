@@ -1,4 +1,11 @@
-use super::{Player, Round, SubmitError, Hand, sort_unplayed_cards};
+use super::{
+    Player,
+    Round,
+    SubmitError,
+    Hand,
+    sort_unplayed_cards,
+/*    FlushPrecedence */
+};
 use crate::cards::{
     get_rank_array,
     get_suit_array,
@@ -76,7 +83,7 @@ impl Game {
             Ok(new_round) => {
                 let player = new_round.get_player(player_id)
                     .unwrap();
-                if player.get_hand().len() == 0
+                if player.get_hand().is_empty()
                     && !self.winners
                             .contains(&player_id.to_string()) {
                     self.winners.push(player_id.to_string());
@@ -143,7 +150,7 @@ mod tests {
         };
 
         assert!(game.get_player(&next_player).unwrap()
-            .has_card(&three_clubs));
+            .has_card(three_clubs));
     }
 
     #[test]

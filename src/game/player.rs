@@ -49,8 +49,8 @@ impl Player {
         Ok(self.clone())
     }
 
-    pub fn has_card(&self, card: &Card) -> bool {
-        self.hand.contains(card)
+    pub fn has_card(&self, card: Card) -> bool {
+        self.hand.contains(&card)
     }
 }
 
@@ -108,8 +108,8 @@ mod tests {
 
         let player = Player::new(id, hand);
 
-        assert!(player.has_card(&three_clubs));
-        assert!(!player.has_card(&four_clubs));
+        assert!(player.has_card(three_clubs));
+        assert!(!player.has_card(four_clubs));
     }
 
     #[test]

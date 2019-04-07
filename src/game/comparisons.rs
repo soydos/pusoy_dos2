@@ -1,10 +1,11 @@
-use super::{Hand, TrickType};
+use super::{Hand, TrickType, FlushPrecedence};
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use std::cmp::Ordering;
 
 pub fn compare_hands(
     last_move: Hand,
     new_hand: Hand,
+    _suits_for_flushes: FlushPrecedence,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13],
 ) -> bool {
@@ -27,11 +28,11 @@ pub fn compare_hands(
 }
 
 pub fn sort_played_cards(
-    hand: &Vec<PlayedCard>,
+    hand: &[PlayedCard],
     suit_order: [Suit; 4],
     rank_order: [Rank; 13]
 ) -> Vec<PlayedCard> {
-    let mut sortable_cards = hand.clone();
+    let mut sortable_cards = hand.to_owned();
     sortable_cards.sort_by(
         |&a, &b| compare_single(a, b, suit_order, rank_order)
     );
@@ -39,11 +40,11 @@ pub fn sort_played_cards(
 }
 
 pub fn sort_unplayed_cards(
-    hand: &Vec<Card>,
+    hand: &[Card],
     suit_order: [Suit; 4],
     rank_order: [Rank; 13]
 ) -> Vec<Card> {
-    let mut sortable_cards = hand.clone();
+    let mut sortable_cards = hand.to_owned();
     sortable_cards.sort_by(
         |&a, &b| compare_single_unplayed(a, b, suit_order, rank_order)
     );
@@ -107,14 +108,43 @@ pub fn compare_five_cards(
 
     let (last_card, new_card) = match last_trick.trick_type {
         TrickType::Straight
-        | TrickType::Flush
-        | TrickType::FiveOfAKind
-        | TrickType::StraightFlush => {
+        | TrickType::FiveOfAKind => {
             let last_card = get_top_card(last_cards, suit_order, rank_order);
             let new_card = get_top_card(new_cards, suit_order, rank_order);
 
             (last_card, new_card)
-        }
+        },
+        TrickType::Flush
+        | TrickType::StraightFlush => {
+            let last_card = get_top_card(
+                last_cards, suit_order, rank_order
+            );
+            let new_card = get_top_card(
+                new_cards, suit_order, rank_order
+            );
+
+/*
+            let last_suit = get_suit_index(last_card, suit_order);
+            let new_card = get_suit_index(new_card, suit_order);
+
+            let rank_comparison = compare_suits(
+                last_card, new_card, suit_order
+            );
+*/
+
+
+/*
+            match rank_comparison {
+                Ordering::Equal => compare_rank(
+                    last_card, new_card, rank_order
+                ),
+                x => x,
+            }
+*/
+
+            (last_card, new_card)
+
+        },
         TrickType::FullHouse | TrickType::FourOfAKind => {
             let set_count = if last_trick.trick_type == TrickType::FullHouse {
                 3
@@ -163,7 +193,7 @@ fn get_top_of_n(
     let valid_cards: Vec<PlayedCard> = cards
         .iter()
         .filter(|&c| c.get_rank() == top_rank)
-        .map(|&c| c.clone())
+        .cloned()
         .collect();
 
     get_top_card(valid_cards, suits_order, rank_order)
@@ -204,14 +234,12 @@ fn compare_rank_unplayed(card1: Card, card2: Card, rank_order: [Rank; 13]) -> Or
     let mut c2_i:u8 = get_rank_index_unplayed(card2, rank_order)
         .expect("unable to find rank index") as u8;
 
-    match card1 {
-        Card::Joker{ deck_id: _ } => c1_i += 1,
-        _ => (),
+    if let Card::Joker{ .. } = card1 {
+        c1_i += 1;
     }
 
-    match card2 {
-        Card::Joker{ deck_id: _ } => c2_i += 1,
-        _ => (),
+    if let Card::Joker{ .. } = card2 {
+        c2_i += 1;
     }
 
     c2_i.cmp(&c1_i)
@@ -262,6 +290,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -275,6 +304,7 @@ mod tests {
         assert!(!compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -288,6 +318,7 @@ mod tests {
         assert!(!compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -301,6 +332,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -314,6 +346,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -333,6 +366,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -352,6 +386,7 @@ mod tests {
         assert!(!compare_hands(
             hand2,
             hand1,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -371,6 +406,7 @@ mod tests {
         assert!(!compare_hands(
             hand2,
             hand1,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -392,6 +428,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -413,6 +450,7 @@ mod tests {
         assert!(!compare_hands(
             hand2,
             hand1,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -434,6 +472,7 @@ mod tests {
         assert!(!compare_hands(
             hand2,
             hand1,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -462,6 +501,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -469,6 +509,7 @@ mod tests {
         assert!(!compare_hands(
             hand2,
             hand1,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -497,6 +538,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -525,6 +567,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -553,6 +596,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -581,6 +625,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -609,6 +654,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -637,6 +683,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -665,6 +712,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -693,6 +741,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -721,6 +770,7 @@ mod tests {
         assert!(compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
@@ -777,8 +827,40 @@ mod tests {
         assert!(!compare_hands(
             hand1,
             hand2,
+            FlushPrecedence::Rank,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
         ));
     }
+
+    #[test]
+    fn can_config_to_allow_suits_to_take_precedence_with_flush() {
+        let hand1_cards = [
+            PlayedCard::new(Rank::Three, Suit::Spades, false),
+            PlayedCard::new(Rank::Four, Suit::Spades, false),
+            PlayedCard::new(Rank::Three, Suit::Spades, false),
+            PlayedCard::new(Rank::Six, Suit::Spades, false),
+            PlayedCard::new(Rank::Seven, Suit::Spades, false),
+        ];
+
+        let hand2_cards = [
+
+            PlayedCard::new(Rank::Three, Suit::Clubs, false),
+            PlayedCard::new(Rank::Two, Suit::Clubs, false),
+            PlayedCard::new(Rank::Ace, Suit::Clubs, false),
+            PlayedCard::new(Rank::King, Suit::Clubs, false),
+            PlayedCard::new(Rank::Ten, Suit::Clubs, false),
+        ];
+        let hand1 = build_fct!(Flush, hand1_cards).unwrap();
+        let hand2 = build_fct!(Flush, hand2_cards).unwrap();
+
+        assert!(!compare_hands(
+            hand1,
+            hand2,
+            FlushPrecedence::Rank,
+            DEFAULT_SUIT_ORDER,
+            DEFAULT_RANK_ORDER,
+        ));
+    }
+
 }

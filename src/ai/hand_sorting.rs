@@ -1,16 +1,16 @@
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use std::collections::HashMap;
 
-pub fn find_pairs(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
+pub fn find_pairs(hand: &[Card]) -> Vec<Vec<PlayedCard>> {
     get_sets_of_same_rank(2, hand)
 }
 
-pub fn find_prials(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
+pub fn find_prials(hand: &[Card]) -> Vec<Vec<PlayedCard>> {
     get_sets_of_same_rank(3, hand)
 }
 
-pub fn find_fct(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
-    let natural_cards = get_natural_cards(hand);
+pub fn find_fct(hand: &[Card]) -> Vec<Vec<PlayedCard>> {
+    let natural_cards = get_natural_cards(hand.to_vec());
     let straights = get_straights(&natural_cards);
     let flushes = get_flushes(&natural_cards);
     let full_houses = get_full_houses(&natural_cards);
@@ -25,7 +25,7 @@ pub fn find_fct(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
     five_card_tricks
 }
 
-fn get_straights(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
+fn get_straights(hand: &[Card]) -> Vec<Vec<PlayedCard>> {
     let mut straights = vec![];
     for card in hand {
         let mut sequence = vec![
@@ -35,7 +35,7 @@ fn get_straights(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
                 false
             )
         ];
-        let mut next_rank = get_next_rank(&card);
+        let mut next_rank = get_next_rank(*card);
         for c2 in hand {
             if c2.get_rank() == next_rank {
                 sequence.push(PlayedCard::new(
@@ -43,7 +43,7 @@ fn get_straights(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
                     c2.get_suit().unwrap(),
                     false
                 ));
-                next_rank = get_next_rank(&c2);
+                next_rank = get_next_rank(*c2);
             }
             if sequence.len() == 5 {
                 break;
@@ -57,7 +57,7 @@ fn get_straights(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
     straights
 }
 
-fn get_flushes(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
+fn get_flushes(hand: &[Card]) -> Vec<Vec<PlayedCard>> {
     let mut flushes = vec![];
     let counts = get_suit_counts(hand);
 
@@ -88,10 +88,10 @@ fn get_flushes(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
     flushes
 }
 
-fn get_full_houses(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
+fn get_full_houses(hand: &[Card]) -> Vec<Vec<PlayedCard>> {
     let mut full_houses = vec![];
-    let pairs = find_pairs(hand);
-    let prials = find_prials(hand);
+    let pairs = find_pairs(&hand.to_vec());
+    let prials = find_prials(&hand.to_vec());
    
     for prial in &prials {
         for pair in &pairs {
@@ -105,7 +105,7 @@ fn get_full_houses(hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
 }
 
 pub fn get_four_of_a_kinds(
-    hand: &Vec<Card>) -> Vec<Vec<PlayedCard>> {
+    hand: &[Card]) -> Vec<Vec<PlayedCard>> {
     let mut four_of_a_kinds = vec![];
     let fours = get_sets_of_same_rank(4, hand);
 
@@ -133,9 +133,9 @@ pub fn get_four_of_a_kinds(
 
 pub fn get_sets_of_same_rank(
     n: usize,
-    player_hand: &Vec<Card>,
+    player_hand: &[Card],
 ) -> Vec<Vec<PlayedCard>> {
-    let counts = get_counts(player_hand.clone());
+    let counts = get_counts(player_hand.to_owned());
     let mut rank_options = vec!();
     for (r, count) in &counts {
         if *count == n {
@@ -149,7 +149,7 @@ pub fn get_sets_of_same_rank(
 
     for &rank in &rank_options {
         let mut hand = vec!();
-        for card in get_natural_cards(&player_hand) {
+        for card in get_natural_cards(player_hand.to_vec()) {
             if card.get_rank().unwrap() == rank {
                 hand.push(
                     PlayedCard::new(
@@ -169,7 +169,7 @@ pub fn get_sets_of_same_rank(
 
 fn get_counts(cards: Vec<Card>) -> HashMap<Rank, usize> {
     cards.iter()
-        .filter(|c| !c.get_rank().is_none())
+        .filter(|c| c.get_rank().is_some())
         .fold(HashMap::new(), |mut acc, &card| {
             *acc.entry(
                 card.get_rank().unwrap()
@@ -178,9 +178,9 @@ fn get_counts(cards: Vec<Card>) -> HashMap<Rank, usize> {
         })
 }
 
-fn get_suit_counts(cards: &Vec<Card>) -> HashMap<Suit, usize> {
+fn get_suit_counts(cards: &[Card]) -> HashMap<Suit, usize> {
     cards.iter()
-        .filter(|c| !c.get_rank().is_none())
+        .filter(|c| c.get_rank().is_some())
         .fold(HashMap::new(), |mut acc, &card| {
             *acc.entry(
                 card.get_suit().unwrap()
@@ -189,14 +189,14 @@ fn get_suit_counts(cards: &Vec<Card>) -> HashMap<Suit, usize> {
         })
 }
 
-fn get_natural_cards(hand: &Vec<Card>) -> Vec<Card> {
+fn get_natural_cards(hand: Vec<Card>) -> Vec<Card> {
     hand.iter().filter(|c| {
         c.get_rank() != None
     })
-    .map(|&c| c.clone()).collect::<Vec<Card>>()
+    .cloned().collect::<Vec<Card>>()
 }
 
-fn get_next_rank(card: &Card) -> Option<Rank> {
+fn get_next_rank(card: Card) -> Option<Rank> {
     match card.get_rank().unwrap_or(Rank::Two) {
         Rank::Three => Some(Rank::Four),
         Rank::Four => Some(Rank::Five),

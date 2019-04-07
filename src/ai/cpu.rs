@@ -2,7 +2,8 @@ use crate::game::{
     Hand,
     Player,
     compare_hands,
-    sort_unplayed_cards
+    sort_unplayed_cards,
+    FlushPrecedence
 };
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use super::{find_pairs, get_sets_of_same_rank, find_fct};
@@ -53,14 +54,14 @@ pub fn get_move(
             let pairs = find_pairs(&player_hand);
             let fct = find_fct(&player_hand);
 
-            let first_pair = if pairs.len() > 0 {
+            let first_pair = if !pairs.is_empty() {
                 Some(pairs.first().unwrap().to_vec())
             } else {
                 None
             };
 
 
-            let first_fct = if fct.len() > 0 {
+            let first_fct = if !fct.is_empty() {
                 Some(fct.first().unwrap().to_vec())
             } else {
                 None
@@ -71,19 +72,21 @@ pub fn get_move(
             );
 
             if first_fct != None {
-                if first_fct.iter().any(|t| {
+                let card_in_fct = first_fct.iter().any(|t| {
                     t.iter().any(|&p| {
                         p == lowest_natural_card[0]
                     })
-                }) {
+                });
+                if card_in_fct {
                     return first_fct.clone();
                 }
             }
 
             if first_pair != None {
-                if first_pair.iter().any(|p| {
+                let card_in_pair = first_pair.iter().any(|p| {
                     p[0] == lowest_natural_card[0]
-                }) {
+                });
+                if card_in_pair {
                     return first_pair.clone();
                 }
             }
@@ -94,15 +97,15 @@ pub fn get_move(
 
             let pairs = find_pairs(&player_hand);
 
-            let single_cards = player_hand.iter().filter(|&p1| {
+            let single_cards: Vec<Card> = player_hand.iter().filter(|&p1| {
                 !pairs.iter().any(|pair| {
                     pair.iter().any(|p2| *p1 == p2.to_card())
                 })
-            }).map(|c| c.clone()).collect();
+            }).cloned().collect();
 
             let played_single = 
                 get_lowest_natural_card_against_played(
-                    &single_cards,
+                    &single_cards.as_slice(),
                     move_hand,
                     suit_order,
                     rank_order
@@ -127,7 +130,7 @@ pub fn get_move(
 
             let jokers = get_jokers(&player_hand);
 
-            if jokers.len() > 0 {
+            if !jokers.is_empty() {
                 let player_hand = get_winning_joker(
                     suit_order,
                     rank_order,
@@ -165,6 +168,7 @@ pub fn get_move(
                 if compare_hands(
                     move_hand,
                     built_hand,
+                    FlushPrecedence::Rank,
                     suit_order,
                     rank_order) {
                     return Some(trick.to_vec());
@@ -178,7 +182,7 @@ pub fn get_move(
 
 fn get_beating_multiple_card_hand(
     n: usize,
-    player_hand: &Vec<Card>,
+    player_hand: &[Card],
     move_hand: Hand,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13], 
@@ -188,6 +192,7 @@ fn get_beating_multiple_card_hand(
         if compare_hands(
             move_hand,
             built_hand,
+            FlushPrecedence::Rank,
             suit_order,
             rank_order) {
             return Some(hand.clone());
@@ -201,7 +206,7 @@ fn get_pass() -> Option<Vec<PlayedCard>>{
     Some(vec!())
 }
 
-fn get_all_low_cards(hand: &Vec<Card>) -> Vec<PlayedCard> {
+fn get_all_low_cards(hand: &[Card]) -> Vec<PlayedCard> {
     let natural_cards = get_natural_cards(hand);
     let player_card = natural_cards.first();
     let (_head, tail_cards) = natural_cards.split_at(1);
@@ -235,7 +240,7 @@ fn get_all_low_cards(hand: &Vec<Card>) -> Vec<PlayedCard> {
     vec![]
 }
 
-fn get_lowest_natural_card(hand: &Vec<Card>) -> Vec<PlayedCard>{
+fn get_lowest_natural_card(hand: &[Card]) -> Vec<PlayedCard>{
     let natural_cards = get_natural_cards(hand);
     let player_card = natural_cards.first();
     match player_card {
@@ -252,7 +257,7 @@ fn get_lowest_natural_card(hand: &Vec<Card>) -> Vec<PlayedCard>{
 }
 
 fn get_lowest_natural_card_against_played(
-    hand: &Vec<Card>,
+    hand: &[Card],
     last_move: Hand,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13]
@@ -271,6 +276,7 @@ fn get_lowest_natural_card_against_played(
         if compare_hands(
             last_move,
             player_hand, 
+            FlushPrecedence::Rank,
             suit_order,
             rank_order
         ) {
@@ -293,45 +299,47 @@ fn get_winning_joker(
         ))
     ).unwrap();
 
-    match compare_hands(
+    if compare_hands(
         last_move,
         joker_single, 
+        FlushPrecedence::Rank,
         suit_order,
         rank_order
     ) {
-        true => Some(joker_single.to_cards()),
-        false => None
+        Some(joker_single.to_cards())
+    } else {
+        None
     }
 
 }
 
-fn get_natural_cards(hand: &Vec<Card>) -> Vec<Card> {
+fn get_natural_cards(hand: &[Card]) -> Vec<Card> {
     hand.iter().filter(|c| {
         c.get_rank() != None
     })
-    .map(|&c| c.clone()).collect::<Vec<Card>>()
+    .cloned().collect::<Vec<Card>>()
 }
 
-fn get_jokers(hand: &Vec<Card>) -> Vec<Card>{
+fn get_jokers(hand: &[Card]) -> Vec<Card>{
     hand.iter().filter(|c| {
         c.get_rank() == None
     })
-    .map(|&c| c.clone()).collect::<Vec<Card>>()
+    .cloned().collect::<Vec<Card>>()
 }
 
 fn convert_to_played(
-    hand: &Vec<Card>,
+    hand: &[Card],
     suit_order: [Suit; 4],
     rank_order: [Rank; 13]
 ) -> Vec<PlayedCard> {
     hand.iter().map(|&c| {
         match c {
             Card::Standard{
-                deck_id: _, rank, suit
+                rank, suit, ..
             } => {
                 PlayedCard::new(rank, suit, false)
             },
-            Card::Joker{deck_id: _} => PlayedCard::new(
+            Card::Joker{ .. } => PlayedCard::new(
                 rank_order[0],
                 suit_order[0],
                 true

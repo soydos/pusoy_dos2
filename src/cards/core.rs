@@ -10,15 +10,15 @@ pub enum Card {
 }
 
 impl Card {
-    pub fn get_rank(&self) -> Option<Rank> {
-        match *self {
+    pub fn get_rank(self) -> Option<Rank> {
+        match self {
             Card::Standard { rank, .. } => Some(rank),
             _ => None,
         }
     }
 
-    pub fn get_suit(&self) -> Option<Suit> {
-        match *self {
+    pub fn get_suit(self) -> Option<Suit> {
+        match self {
             Card::Standard { suit, .. } => Some(suit),
             _ => None,
         }
@@ -43,19 +43,19 @@ impl PlayedCard {
         }
     }
 
-    pub fn get_rank(&self) -> Rank {
+    pub fn get_rank(self) -> Rank {
         self.rank
     }
 
-    pub fn get_suit(&self) -> Suit {
+    pub fn get_suit(self) -> Suit {
         self.suit
     }
 
-    pub fn get_is_joker(&self) -> bool {
+    pub fn get_is_joker(self) -> bool {
         self.is_joker
     }
 
-    pub fn to_card(&self) -> Card {
+    pub fn to_card(self) -> Card {
         if self.is_joker {
             Card::Joker { deck_id: 0 }
         } else {

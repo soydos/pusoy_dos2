@@ -19,8 +19,8 @@ pub enum Suit {
 }
 
 impl Suit {
-    pub fn colour(&self) -> Colour {
-        match *self {
+    pub fn colour(self) -> Colour {
+        match self {
             Suit::Clubs | Suit::Spades => Colour::Black,
             Suit::Hearts | Suit::Diamonds => Colour::Red,
         }

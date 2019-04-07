@@ -22,8 +22,8 @@ impl Deck {
                 for rank in &ranks {
                     let card = Card::Standard {
                         deck_id: deck_count,
-                        rank: rank.clone(),
-                        suit: suit.clone(),
+                        rank: *rank,
+                        suit: *suit,
                     };
                     cards.push(card);
                 }
@@ -44,7 +44,7 @@ impl Deck {
         let mut deck_stack = self.0.clone();
         let mut dealt_stacks = self.get_nested_vec(players);
 
-        while deck_stack.len() > 0 {
+        while !deck_stack.is_empty() {
             let card = deck_stack.pop();
             dealt_stacks[index].push(card.unwrap());
             index = self.rotate_index_to_max(index, players);
