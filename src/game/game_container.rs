@@ -4,18 +4,17 @@ use super::{
     SubmitError,
     Hand,
     sort_unplayed_cards,
-/*    FlushPrecedence */
+    Ruleset,
 };
 use crate::cards::{
     get_rank_array,
-    get_suit_array,
     Deck,
-    PlayedCard
+    PlayedCard,
+    Suit
 };
 use crate::ai::get_move;
 use wasm_bindgen::prelude::*;
 
-// todo - suit order is a property of game
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct Game {
@@ -30,10 +29,9 @@ impl Game {
         num_decks: u8,
         num_jokers: u8,
         player_ids: &[String],
-        reversals_enabled: bool,
+        suit_order: [Suit; 4],
+        ruleset: Ruleset
     ) -> Game {
-        // todo - set when game is setup
-        let suit_order = get_suit_array();
         let rank_order = get_rank_array();
 
         let mut deck = Deck::new(num_decks, num_jokers);
@@ -63,7 +61,7 @@ impl Game {
             None,
             suit_order,
             rank_order,
-            reversals_enabled
+            ruleset
         );
 
         Game {
@@ -126,12 +124,24 @@ impl Game {
 mod tests {
     use super::*;
     use crate::cards::*;
+    use crate::game::FlushPrecedence;
+
+    const DEFAULT_RULESET: Ruleset = Ruleset{
+        reversals_enabled: true,
+        flush_precedence: FlushPrecedence::Rank,
+    };
+
 
     #[test]
     fn it_allows_retrieving_a_player_by_id() {
-        let ids = [String::from("a"), String::from("b"), String::from("c")];
-        let game = Game::new(1, 0, &ids, false);
-
+        let ids = [
+            String::from("a"),
+            String::from("b"),
+            String::from("c")
+        ];
+        let game = Game::new(
+            1, 0, &ids, get_suit_array(), DEFAULT_RULESET
+        );
         let player_a = game.get_player("a").unwrap();
 
         assert_eq!(player_a.get_card_count(), 18);
@@ -140,7 +150,9 @@ mod tests {
     #[test]
     fn when_game_hasnt_started_player_with_lowest_card_starts() {
         let ids = [String::from("a"), String::from("b")];
-        let game = Game::new(1, 0, &ids, false);
+        let game = Game::new(
+            1, 0, &ids, get_suit_array(), DEFAULT_RULESET
+        );
 
         let next_player = game.get_next_player().unwrap();
         let three_clubs = Card::Standard {
@@ -156,7 +168,9 @@ mod tests {
     #[test]
     fn player_loses_cards_that_it_plays() {
         let ids = ["a".to_string(), "b".to_string()];
-        let mut game = Game::new(1, 0, &ids, false);
+        let mut game = Game::new(
+            1,0, &ids, get_suit_array(), DEFAULT_RULESET
+        );
 
         let next_player = game.get_next_player()
             .expect("unable to get next player").to_owned();
@@ -214,7 +228,7 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
-            true
+            DEFAULT_RULESET
         );
 
         let mut game = Game{
@@ -278,7 +292,7 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
-            true
+            DEFAULT_RULESET
         );
 
         let mut game = Game{
@@ -336,7 +350,7 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
-            true
+            DEFAULT_RULESET
         );
 
         let mut game = Game{
@@ -388,7 +402,7 @@ mod tests {
             Some("a".to_string()),
             get_suit_array(),
             get_rank_array(),
-            true
+            DEFAULT_RULESET
         );
 
         let mut game = Game{

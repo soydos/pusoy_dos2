@@ -4,7 +4,7 @@ use super::{
     Player,
     Trick,
     TrickType,
-    FlushPrecedence
+    Ruleset,
 };
 use crate::cards::{Card, PlayedCard, Rank, Suit};
 use serde::Serialize;
@@ -27,7 +27,7 @@ pub struct Round {
     last_player: Option<String>,
     suit_order: [Suit; 4],
     rank_order: [Rank; 13],
-    reversals_enabled: bool,
+    ruleset: Ruleset
 }
 
 impl Round {
@@ -38,7 +38,7 @@ impl Round {
         last_player: Option<String>,
         suit_order: [Suit; 4],
         rank_order: [Rank; 13],
-        reversals_enabled: bool,
+        ruleset: Ruleset
     ) -> Round {
         Round {
             players,
@@ -47,7 +47,7 @@ impl Round {
             last_player,
             suit_order,
             rank_order,
-            reversals_enabled,
+            ruleset,
         }
     }
 
@@ -136,7 +136,7 @@ impl Round {
             new_last_player,
             suit_order,
             rank_order,
-            self.reversals_enabled
+            self.ruleset
         ))
     }
 
@@ -216,7 +216,7 @@ impl Round {
             self.last_move
                 .expect("cannot compare when no last_move"),
             cards,
-            FlushPrecedence::Rank,
+            self.ruleset.flush_precedence,
             self.suit_order,
             self.rank_order,
         )
@@ -295,7 +295,7 @@ impl Round {
         let mut suit_order = self.suit_order;
         let mut rank_order = self.rank_order;
 
-        if self.reversals_enabled {
+        if self.ruleset.reversals_enabled {
             if let Hand::FiveCardTrick(Trick{
                     trick_type: TrickType::FourOfAKind,
                     ..
@@ -314,6 +314,7 @@ impl Round {
 mod tests {
     use super::*;
     use crate::cards::*;
+    use crate::game::FlushPrecedence;
 
     static DEFAULT_SUIT_ORDER: [Suit; 4] =
         [Suit::Clubs, Suit::Hearts, Suit::Diamonds, Suit::Spades];
@@ -333,6 +334,11 @@ mod tests {
         Rank::Ace,
         Rank::Two,
     ];
+
+    const DEFAULT_RULESET: Ruleset = Ruleset{
+        reversals_enabled: true,
+        flush_precedence: FlushPrecedence::Rank,
+    };
 
     #[test]
     fn when_game_hasnt_started_player_with_3clubs_starts() {
@@ -358,7 +364,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET,
         );
 
         assert_eq!(round.get_next_player(), Some("a".to_string()));
@@ -386,7 +392,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET,
         );
 
         assert_eq!(round.get_next_player(), Some("b".to_string()));
@@ -414,7 +420,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET,
         );
 
         let err = round.submit_move("a", vec![]).err().unwrap();
@@ -451,7 +457,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET,
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false)
@@ -493,7 +499,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -535,7 +541,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -579,7 +585,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false)
@@ -622,7 +628,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false)
@@ -667,7 +673,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
@@ -708,7 +714,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
@@ -754,7 +760,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Four, Suit::Clubs, false),
@@ -810,7 +816,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Six, Suit::Clubs, false),
@@ -853,7 +859,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -896,7 +902,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -942,7 +948,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -994,7 +1000,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(Rank::Three, Suit::Clubs, false)
@@ -1074,7 +1080,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![];
 
@@ -1161,7 +1167,7 @@ mod tests {
             None,
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![
             PlayedCard::new(
@@ -1254,7 +1260,7 @@ mod tests {
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
         let played_hand = vec![];
 
@@ -1299,7 +1305,7 @@ mod tests {
             Some("a".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![
@@ -1363,7 +1369,7 @@ mod tests {
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![];
@@ -1427,7 +1433,7 @@ mod tests {
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![
@@ -1502,7 +1508,7 @@ mod tests {
             Some("b".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![];
@@ -1555,7 +1561,7 @@ mod tests {
             Some("c".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![
@@ -1630,7 +1636,7 @@ mod tests {
             Some("d".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![];
@@ -1706,7 +1712,7 @@ mod tests {
             Some("b".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![
@@ -1793,7 +1799,7 @@ mod tests {
             Some("b".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            true
+            DEFAULT_RULESET
         );
 
         let played_hand = vec![
@@ -1871,6 +1877,11 @@ mod tests {
         let players = vec![player_a, player_b, player_c];
         let last_move = Some(Hand::Pass);
 
+        let ruleset = Ruleset {
+            reversals_enabled: false,
+            flush_precedence: FlushPrecedence::Rank
+        };
+
         let round = Round::new(
             players,
             Some("a".to_string()),
@@ -1878,7 +1889,7 @@ mod tests {
             Some("b".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            false
+            ruleset
         );
 
         let played_hand = vec![
@@ -1940,6 +1951,10 @@ mod tests {
 
         let players = vec![player_a, player_b, player_c];
         let last_move = Some(Hand::Pass);
+        let ruleset = Ruleset {
+            reversals_enabled: false,
+            flush_precedence: FlushPrecedence::Rank
+        };
 
         let round = Round::new(
             players,
@@ -1948,7 +1963,7 @@ mod tests {
             Some("b".to_string()),
             DEFAULT_SUIT_ORDER,
             DEFAULT_RANK_ORDER,
-            false
+            ruleset
         );
 
         let played_hand = vec![

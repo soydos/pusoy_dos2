@@ -4,9 +4,9 @@ pub enum FlushPrecedence {
     Rank
 }
 
-/*
+#[derive(Debug, Copy, Clone)]
 pub struct Ruleset {
-    reversals: bool,
-    flush_precedence: FlushPrecedence
+    pub reversals_enabled: bool,
+    pub flush_precedence: FlushPrecedence
 }
-*/
+
