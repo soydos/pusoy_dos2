@@ -5,6 +5,7 @@ use super::{
     Hand,
     sort_unplayed_cards,
     Ruleset,
+    compare_hands
 };
 use crate::cards::{
     get_rank_array,
@@ -22,6 +23,7 @@ pub struct Game {
     num_jokers: u8,
     round: Round,
     winners: Vec<String>,
+    ruleset: Ruleset,
 }
 
 impl Game {
@@ -68,7 +70,8 @@ impl Game {
             num_decks,
             num_jokers,
             round,
-            winners: vec!()
+            winners: vec!(),
+            ruleset
         }
     }
 
@@ -117,6 +120,44 @@ impl Game {
 
     pub fn get_winners(&self) -> Vec<String> {
         self.winners.clone()
+    }
+
+    pub fn check_move(
+        &self,
+        hand: Vec<PlayedCard>) -> bool {
+
+        let new_hand_option = Hand::build(hand.clone());
+        let last_move_option = self.round.get_last_move();
+
+        if new_hand_option.is_none() {
+            return false;
+        }
+
+        if last_move_option.is_none() {
+
+            let lowest_card = PlayedCard::new(
+                self.round.get_rank_order()[0],
+                self.round.get_suit_order()[0],
+                false
+            );
+
+            return hand.contains(&lowest_card);
+        }
+
+        let new_hand = new_hand_option.expect("invalid hand");
+        let last_move = last_move_option.expect("no last move");
+
+        if last_move == Hand::Pass {
+            return true;
+        }
+
+        compare_hands(
+            last_move,
+            new_hand,
+            self.ruleset.flush_precedence,
+            self.round.get_suit_order(),
+            self.round.get_rank_order()
+        )
     }
 }
 
@@ -236,6 +277,7 @@ mod tests {
             num_jokers: 1,
             round,
             winners: vec!(),
+            ruleset: DEFAULT_RULESET 
         };
 
         let hand = vec![
@@ -300,6 +342,7 @@ mod tests {
             num_jokers: 1,
             round,
             winners: vec!(),
+            ruleset: DEFAULT_RULESET
         };
 
         let hand = vec![
@@ -358,6 +401,7 @@ mod tests {
             num_jokers: 1,
             round,
             winners: vec!["c".to_string()],
+            ruleset: DEFAULT_RULESET
         };
 
         let hand = vec![];
@@ -410,6 +454,7 @@ mod tests {
             num_jokers: 1,
             round,
             winners: vec!["c".to_string()],
+            ruleset: DEFAULT_RULESET
         };
 
         let hand = vec![
@@ -427,4 +472,255 @@ mod tests {
             "b"
         );
     }
+
+    #[test]
+    fn check_move_returns_false_when_unable_to_play() {
+        let ids = ["a".to_string(), "b".to_string()];
+        let game = Game::new(
+            1,0, &ids, get_suit_array(), DEFAULT_RULESET
+        );
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Hearts,
+                false,
+            )
+        ];
+
+        let result = game.check_move(hand);
+
+        assert!(!result);
+    }
+
+    #[test]
+    fn check_move_returns_ok_when_able_to_play() {
+        let ids = ["a".to_string(), "b".to_string()];
+        let game = Game::new(
+            1,0, &ids, get_suit_array(), DEFAULT_RULESET
+        );
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let result = game.check_move(hand);
+
+        assert!(result);
+    }
+
+    #[test]
+    fn check_move_returns_false_when_hand_is_invalid() {
+        let ids = ["a".to_string(), "b".to_string()];
+        let game = Game::new(
+            1,0, &ids, get_suit_array(), DEFAULT_RULESET
+        );
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            ),
+            PlayedCard::new(
+                Rank::Four,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let result = game.check_move(hand);
+
+        assert!(!result);
+    }
+
+    #[test]
+    fn check_move_returns_true_when_hand_would_play() {
+        let a_cards = vec![
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![];
+
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let round = Round::new(
+            players,
+            Some("b".to_string()),
+            Some(Hand::Pass),
+            Some("a".to_string()),
+            get_suit_array(),
+            get_rank_array(),
+            DEFAULT_RULESET
+        );
+
+        let game = Game{
+            num_decks: 1,
+            num_jokers: 1,
+            round,
+            winners: vec!["c".to_string()],
+            ruleset: DEFAULT_RULESET
+        };
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Four,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let result = game.check_move(hand);
+
+        assert!(result);
+    }
+
+    #[test]
+    fn check_move_returns_true_when_hand_would_beat_last_move() {
+        let a_cards = vec![
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![];
+
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let round = Round::new(
+            players,
+            Some("b".to_string()),
+            Some(Hand::Single(PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            ))),
+            Some("a".to_string()),
+            get_suit_array(),
+            get_rank_array(),
+            DEFAULT_RULESET
+        );
+
+        let game = Game{
+            num_decks: 1,
+            num_jokers: 1,
+            round,
+            winners: vec!["c".to_string()],
+            ruleset: DEFAULT_RULESET
+        };
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Four,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let result = game.check_move(hand);
+
+        assert!(result);
+    }
+
+    #[test]
+    fn check_move_returns_false_when_hand_would_beat_last_move() {
+        let a_cards = vec![
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            },
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Four,
+                suit: Suit::Clubs,
+            }
+        ];
+        let b_cards = vec![
+            Card::Standard {
+                deck_id: 0,
+                rank: Rank::Three,
+                suit: Suit::Clubs,
+            },
+        ];
+        let c_cards = vec![];
+
+        let player_a = Player::new("a".to_string(), a_cards);
+        let player_b = Player::new("b".to_string(), b_cards);
+        let player_c = Player::new("c".to_string(), c_cards);
+
+        let players = vec![player_a, player_b, player_c];
+        let round = Round::new(
+            players,
+            Some("b".to_string()),
+            Some(Hand::Single(PlayedCard::new(
+                Rank::Four,
+                Suit::Clubs,
+                false,
+            ))),
+            Some("a".to_string()),
+            get_suit_array(),
+            get_rank_array(),
+            DEFAULT_RULESET
+        );
+
+        let game = Game{
+            num_decks: 1,
+            num_jokers: 1,
+            round,
+            winners: vec!["c".to_string()],
+            ruleset: DEFAULT_RULESET
+        };
+
+        let hand = vec![
+            PlayedCard::new(
+                Rank::Three,
+                Suit::Clubs,
+                false,
+            )
+        ];
+
+        let result = game.check_move(hand);
+
+        assert!(!result);
+    }
+
 }
