@@ -15,7 +15,6 @@ pub fn get_move(
     rank_order: [Rank; 13],
 ) -> Option<Vec<PlayedCard>> {
     let player = player_option.unwrap();
-    // todo - sort
     let unsorted_player_hand = player.get_hand();
     let mut sorted_player_hand = sort_unplayed_cards(
         &unsorted_player_hand,
