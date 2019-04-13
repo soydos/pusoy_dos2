@@ -159,6 +159,10 @@ impl Game {
             self.round.get_rank_order()
         )
     }
+
+    pub fn get_suit_order(&self) -> [Suit; 4] {
+        self.round.get_suit_order()
+    }
 }
 
 #[cfg(test)]
