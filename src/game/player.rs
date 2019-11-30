@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn it_has_an_id() {
-        let id = "id1";;
+        let id = "id1";
         let player = Player::new(String::from("id1"), vec![]);
         assert_eq!(player.get_id(), id);
     }
