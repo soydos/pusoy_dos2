@@ -15,9 +15,10 @@ use crate::cards::{
 };
 use crate::ai::get_move;
 use wasm_bindgen::prelude::*;
+use serde::{Deserialize, Serialize};
 
 #[wasm_bindgen]
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Game {
     num_decks: u8,
     num_jokers: u8,

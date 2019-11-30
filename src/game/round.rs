@@ -7,9 +7,9 @@ use super::{
     Ruleset,
 };
 use crate::cards::{Card, PlayedCard, Rank, Suit};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum SubmitError {
     FirstRoundPass,
     FirstHandMustContainLowestCard,
@@ -19,7 +19,7 @@ pub enum SubmitError {
     PlayerDoesntHaveCard,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Round {
     players: Vec<Player>,
     next_player: Option<String>,

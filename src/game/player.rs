@@ -1,14 +1,14 @@
 use crate::cards::{Card, PlayedCard};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum PlayerError {
     PlayerDoesntHaveCard,
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Player {
     id: String,
     hand: Vec<Card>,
