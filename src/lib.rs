@@ -1,3 +1,3 @@
 pub mod cards;
 pub mod game;
-mod ai;
+pub mod ai;
