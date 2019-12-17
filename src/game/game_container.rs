@@ -11,7 +11,8 @@ use crate::cards::{
     get_rank_array,
     Deck,
     PlayedCard,
-    Suit
+    Suit,
+    Rank,
 };
 use crate::ai::get_move;
 use wasm_bindgen::prelude::*;
@@ -164,6 +165,11 @@ impl Game {
     pub fn get_suit_order(&self) -> [Suit; 4] {
         self.round.get_suit_order()
     }
+
+    pub fn get_rank_order(&self) -> [Rank; 13] {
+        self.round.get_rank_order()
+    }
+
 }
 
 #[cfg(test)]
