@@ -5,7 +5,8 @@ use super::{
     Hand,
     sort_unplayed_cards,
     Ruleset,
-    compare_hands
+    compare_hands,
+    FlushPrecedence
 };
 use crate::cards::{
     get_rank_array,
@@ -159,6 +160,47 @@ impl Game {
             self.ruleset.flush_precedence,
             self.round.get_suit_order(),
             self.round.get_rank_order()
+        )
+    }
+
+    pub fn check_move_m(
+        hand: Vec<PlayedCard>,
+        last_move_option: Option<Hand>,
+        suit_order: [Suit; 4],
+        rank_order: [Rank; 13],
+        flush_precedence: FlushPrecedence,
+    ) -> bool {
+
+        let new_hand_option = Hand::build(hand.clone());
+
+        if new_hand_option.is_none() {
+            return false;
+        }
+
+        if last_move_option.is_none() {
+
+            let lowest_card = PlayedCard::new(
+                rank_order[0],
+                suit_order[0],
+                false
+            );
+
+            return hand.contains(&lowest_card);
+        }
+
+        let new_hand = new_hand_option.expect("invalid hand");
+        let last_move = last_move_option.expect("no last move");
+
+        if last_move == Hand::Pass {
+            return true;
+        }
+
+        compare_hands(
+            last_move,
+            new_hand,
+            flush_precedence,
+            suit_order,
+            rank_order
         )
     }
 
